@@ -147,10 +147,53 @@ class Database:
     def __init__(self, duckdb_path: str = ":memory:", sqlite_path: str = ":memory:"):
         self._duckdb_path = duckdb_path
         self._sqlite_path = sqlite_path
-        self._duck = duckdb.connect(duckdb_path)
+        self._duck = self._connect_duckdb_resilient(duckdb_path)
         self._sqlite = sqlite3.connect(sqlite_path, check_same_thread=False)
         self._lock = threading.Lock()
         self._init_schema()
+
+    @staticmethod
+    def _connect_duckdb_resilient(duckdb_path: str):
+        """Open DuckDB, self-healing from an un-replayable WAL.
+
+        Graceful shutdown CHECKPOINTs the WAL (see ``close``). But an
+        *unclean* stop — ``docker kill``, OOM, host crash, k8s pod
+        eviction — leaves a WAL that, on the next start, DuckDB may fail
+        to replay with an InternalException ("Failure while replaying
+        WAL file ... GetDefaultDatabase with no default database set").
+        Before this, that bricked every DB-backed endpoint while
+        ``/health`` still returned 200 — a silent, restart-triggered
+        outage.
+
+        Recovery: quarantine the orphan WAL (move it aside with a
+        timestamp — never delete; it's preserved for forensics / manual
+        recovery) and reopen. Cost is the un-CHECKPOINTed tail of the
+        last session only — the standard, accepted WAL-corruption
+        tradeoff. In-memory DBs have no WAL and skip all of this.
+        """
+        if duckdb_path == ":memory:":
+            return duckdb.connect(duckdb_path)
+        try:
+            return duckdb.connect(duckdb_path)
+        except Exception as exc:  # noqa: BLE001 — must not brick on start
+            wal = duckdb_path + ".wal"
+            if "WAL" not in str(exc) and "wal" not in str(exc):
+                raise
+            if not os.path.exists(wal):
+                raise
+            quarantine = f"{wal}.corrupt-{int(datetime.now(timezone.utc).timestamp())}"
+            try:
+                os.rename(wal, quarantine)
+            except OSError:
+                raise exc
+            print(
+                f"[korveo] WARNING: un-replayable DuckDB WAL after an "
+                f"unclean shutdown — quarantined to {quarantine} and "
+                f"recovered. Un-checkpointed writes from the last "
+                f"session are lost; the file is kept for inspection.",
+                flush=True,
+            )
+            return duckdb.connect(duckdb_path)
 
     # Read-only path accessors for code (e.g. background webhook
     # workers) that needs to open its own short-lived Database

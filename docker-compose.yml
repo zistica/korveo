@@ -49,6 +49,15 @@ services:
       - korveo-data:/data
 
     environment:
+      # Ports above are bound to 127.0.0.1 only, so the API is reachable
+      # exclusively from this host. Inside the container, Docker's NAT
+      # makes that host traffic arrive from the bridge gateway (a
+      # non-loopback IP), which the safe-by-default guard would 403
+      # without a token — breaking the local quickstart. Since the
+      # listener is loopback-bound on the host, accepting it is correct.
+      # If you republish on 0.0.0.0 (public), REMOVE this line and set
+      # KORVEO_API_TOKEN instead.
+      KORVEO_ALLOW_INSECURE: ${KORVEO_ALLOW_INSECURE:-1}
       # Where DuckDB lives inside the container. Must match the volume
       # mount above. Override only if you know what you're doing.
       KORVEO_DATA_DIR: /data
@@ -81,7 +90,7 @@ services:
       # The container reports healthy when /health returns 200. Hits
       # the API directly (not via the dashboard rewrite) so a slow
       # Next.js boot doesn't fail the check.
-      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:8000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:8000/v1/admin/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3

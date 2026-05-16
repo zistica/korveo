@@ -86,8 +86,13 @@ EXPOSE 3000 8000
 # is fully ready. start_period: 30s tolerates slow image boots on
 # small VPSes (DuckDB schema migrations + classifier loading add
 # ~5-15s on a 2-vCPU host).
+# Probe a DB-backed endpoint, not the static /health. /health returns
+# 200 even when the DuckDB layer is down (e.g. a WAL-replay failure
+# after an unclean stop), which made orchestrators see a fully-broken
+# container as "healthy" and keep routing traffic to 500s.
+# /v1/admin/health touches the DB via Depends(get_db) and fails closed.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD curl -sf http://127.0.0.1:8000/health || exit 1
+  CMD curl -sf http://127.0.0.1:8000/v1/admin/health || exit 1
 
 # tini reaps zombies + forwards signals; start.sh manages both processes
 ENTRYPOINT ["/usr/bin/tini", "--"]

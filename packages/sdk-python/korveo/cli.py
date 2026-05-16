@@ -278,6 +278,12 @@ def cmd_up(args: argparse.Namespace) -> int:
             "docker", "run", "-d", "--name", "korveo",
             "-p", "127.0.0.1:3000:3000",
             "-p", "127.0.0.1:8000:8000",
+            # Ports are loopback-bound on the host, but Docker NAT makes
+            # that traffic look non-loopback inside the container; the
+            # safe-by-default guard would 403 it without this. Loopback
+            # publish == local, so accepting it is correct. (Public
+            # 0.0.0.0 deployments must use a token, not this.)
+            "-e", "KORVEO_ALLOW_INSECURE=1",
             "-v", "korveo-data:/data",
             args.image or DEFAULT_IMAGE,
         ]
