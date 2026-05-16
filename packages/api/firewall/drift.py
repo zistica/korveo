@@ -244,15 +244,24 @@ def _detect_drift_locked(db: Database) -> Dict[str, Any]:
             continue
         direction = "up" if z > 0 else "down"
 
-        # Skip if we already alerted on this policy today
+        # Skip if we already alerted on this policy today.
+        #
+        # detected_at is written as *naive UTC* (see now_ts below), so the
+        # dedup must compare against a naive-UTC day too. The previous
+        # form used SQL NOW(), which DuckDB types as TIMESTAMP WITH TIME
+        # ZONE; DATE_TRUNC('day', <tz-aware>) never equates to
+        # DATE_TRUNC('day', <naive column>), so the guard silently never
+        # matched and every run re-alerted. Bind the UTC day from Python
+        # (same basis as the INSERT) and compare as DATE.
+        today_utc = datetime.now(timezone.utc).replace(tzinfo=None).date()
         existing = db.fetchone(
             """
             SELECT 1 FROM firewall_drift_alerts
             WHERE policy_name = ?
-              AND DATE_TRUNC('day', detected_at) = DATE_TRUNC('day', NOW())
+              AND CAST(detected_at AS DATE) = ?
             LIMIT 1
             """,
-            [policy_name],
+            [policy_name, today_utc],
         )
         if existing:
             continue
