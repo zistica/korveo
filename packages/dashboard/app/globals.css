@@ -1,0 +1,370 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Refined dark palette — softer, more depth than the prior single
+     flat slate. Background uses two stops so panels sit slightly
+     above the page; subtle radial wash gives the surface depth
+     without going overboard. Default theme is dark — the
+     [data-theme="light"] block below flips a small set of variables
+     for light-mode users.
+
+     Variables that carry hardcoded color values in component CSS
+     (.app-header background, .wordmark gradient, the body radial
+     washes) are factored into separate vars so the theme switch
+     doesn't require touching every component. */
+  --background:        #07090c;
+  --background-raised: #0d1117;
+  --background-hover:  #11161e;
+  --foreground:        #e7eaee;
+  --foreground-soft:   #c4c9d2;
+  --muted:             #7e8a9c;
+  --muted-soft:        #5a6470;
+  --border:            #1c2330;
+  --border-strong:     #2a3242;
+  --border-glow:       rgba(96, 165, 250, 0.18);
+  --accent:            #60a5fa;
+  --accent-glow:       rgba(96, 165, 250, 0.12);
+  /* Korveo brand palette — match Logo + SpanRow type badges */
+  --brand-blue:    #60a5fa;
+  --brand-violet:  #a78bfa;
+  --brand-cyan:    #22d3ee;
+  --brand-amber:   #f59e0b;
+  --brand-emerald: #10b981;
+  --brand-rose:    #f43f5e;
+  /* Themed primitives — read by component CSS that previously
+     hardcoded the dark equivalent inline. */
+  --header-bg:     rgba(7, 9, 12, 0.7);
+  --wash-blue:     rgba(96, 165, 250, 0.06);
+  --wash-violet:   rgba(167, 139, 250, 0.04);
+  --wordmark-from: #e7eaee;
+  --wordmark-to:   #94a3b8;
+  /* "Thinking" accent used by the chat-shaped trace view's
+     reasoning accordion (and the SpanRow thinking sub-span). Both
+     themes share violet hues so the brand reads consistent —
+     only the contrast swaps. */
+  --thinking-bg:        rgba(167, 139, 250, 0.10);
+  --thinking-bg-hover:  rgba(167, 139, 250, 0.18);
+  --thinking-border:    rgba(167, 139, 250, 0.35);
+  --thinking-fg:        #c4b5fd;
+  --thinking-fg-soft:   #a78bfa;
+  /* Span type-badge palette. Foreground + border for each span type
+     pill (llm / tool / retrieval / memory / custom). Both modes
+     share the same hue family per type — only the contrast swaps so
+     the badges stay legible on light AND dark backgrounds. */
+  --span-llm-fg:         #c4b5fd;
+  --span-llm-border:     rgba(91, 33, 182, 0.6);
+  --span-tool-fg:        #67e8f9;
+  --span-tool-border:    rgba(14, 116, 144, 0.6);
+  --span-retrieval-fg:   #fcd34d;
+  --span-retrieval-border: rgba(146, 64, 14, 0.6);
+  --span-memory-fg:      #f9a8d4;
+  --span-memory-border:  rgba(157, 23, 77, 0.6);
+  --span-custom-fg:      #cbd5e1;
+  --span-custom-border:  rgba(71, 85, 105, 0.7);
+  --span-response-fg:    #6ee7b7;
+  --span-response-border: rgba(6, 95, 70, 0.7);
+  --span-error-fg:       #fca5a5;
+  --span-error-bg:       rgba(127, 29, 29, 0.30);
+  --span-error-border:   rgba(185, 28, 28, 0.7);
+  /* Color-scheme tells the browser what tone the page is — affects
+     native form controls, scrollbars on macOS, and image rendering. */
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  /* Light palette — high contrast on a near-white background, same
+     accent blue so brand recognition holds. Borders are slightly
+     darker than pure greys so cards still read as raised surfaces. */
+  --background:        #f7f8fa;
+  --background-raised: #ffffff;
+  --background-hover:  #eef1f5;
+  --foreground:        #0f172a;
+  --foreground-soft:   #334155;
+  --muted:             #64748b;
+  --muted-soft:        #94a3b8;
+  --border:            #e2e8f0;
+  --border-strong:     #cbd5e1;
+  --border-glow:       rgba(37, 99, 235, 0.18);
+  --accent:            #2563eb;
+  --accent-glow:       rgba(37, 99, 235, 0.10);
+  --header-bg:         rgba(255, 255, 255, 0.75);
+  --wash-blue:         rgba(37, 99, 235, 0.05);
+  --wash-violet:       rgba(139, 92, 246, 0.04);
+  --wordmark-from:     #0f172a;
+  --wordmark-to:       #475569;
+  /* Light-mode thinking palette: deeper violet text on a faint violet
+     wash so the reasoning text stays readable on a near-white page
+     surface. Without these, the dark-mode lavender-on-deep-violet
+     would render as pale-on-pale and disappear. */
+  --thinking-bg:        rgba(124, 58, 237, 0.06);
+  --thinking-bg-hover:  rgba(124, 58, 237, 0.12);
+  --thinking-border:    rgba(124, 58, 237, 0.30);
+  --thinking-fg:        #5b21b6;
+  --thinking-fg-soft:   #6d28d9;
+  /* Light-mode span-badge palette. Foreground darkened so the pill
+     reads on near-white backgrounds; border lightened so it doesn't
+     dominate. Same hue family as dark mode for cross-theme
+     recognition. */
+  --span-llm-fg:           #6d28d9;
+  --span-llm-border:       #c4b5fd;
+  --span-tool-fg:          #0e7490;
+  --span-tool-border:      #a5f3fc;
+  --span-retrieval-fg:     #b45309;
+  --span-retrieval-border: #fcd34d;
+  --span-memory-fg:        #be185d;
+  --span-memory-border:    #f9a8d4;
+  --span-custom-fg:        #475569;
+  --span-custom-border:    #cbd5e1;
+  --span-response-fg:      #047857;
+  --span-response-border:  #6ee7b7;
+  --span-error-fg:         #b91c1c;
+  --span-error-bg:         rgba(254, 226, 226, 0.7);
+  --span-error-border:     #fca5a5;
+  color-scheme: light;
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  /* Subtle radial wash from top — gives the page depth without noise. */
+  background-image:
+    radial-gradient(ellipse 800px 600px at 50% -200px, var(--wash-blue), transparent 60%),
+    radial-gradient(ellipse 600px 500px at 90% 20%, var(--wash-violet), transparent 60%);
+  background-attachment: fixed;
+  /* Smooth the visual transition when the user flips themes. */
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+body {
+  font-family:
+    'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
+}
+
+.font-mono,
+code,
+pre,
+kbd {
+  font-family:
+    'JetBrains Mono', 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-feature-settings: 'calt' 0;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: rgba(96, 165, 250, 0.3);
+}
+
+/* Custom scrollbar — minimal, subtle */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-soft);
+}
+
+/* ── Component primitives ─────────────────────────────────────── */
+
+/* Premium card — slight raise off page, hover glow + lift. */
+.card {
+  background: var(--background-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 160ms ease, transform 160ms ease,
+              box-shadow 160ms ease, background-color 160ms ease;
+}
+.card-interactive {
+  cursor: pointer;
+}
+.card-interactive:hover {
+  border-color: var(--border-strong);
+  background: var(--background-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.02) inset,
+    0 8px 24px -12px rgba(0, 0, 0, 0.6),
+    0 0 0 1px var(--border-glow);
+}
+
+/* Filter pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted);
+  transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease;
+}
+.pill:hover {
+  color: var(--foreground);
+  border-color: var(--border-strong);
+}
+.pill-active {
+  color: var(--foreground);
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
+/* Form controls — used in the policy editor (Phase 4). Dark-tinted
+   inputs that match the card styling, with an accent ring on focus
+   so the active field is unambiguous in the layered palette. */
+.form-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--background-raised);
+  color: var(--foreground);
+  font-size: 13px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.form-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.form-input::placeholder {
+  color: var(--muted);
+}
+textarea.form-input {
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.5;
+}
+.form-checkbox {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+}
+
+/* Activity dot with halo for "active" state */
+.activity-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.activity-dot.active {
+  background: var(--brand-emerald);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.18),
+              0 0 12px 2px rgba(16, 185, 129, 0.35);
+}
+.activity-dot.active::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.4);
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse-ring {
+  0%, 100% { transform: scale(1);   opacity: 0.4; }
+  50%      { transform: scale(1.6); opacity: 0;   }
+}
+.activity-dot.idle {
+  background: var(--brand-amber);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
+}
+.activity-dot.dormant {
+  background: #4b5563;
+}
+
+/* Section header */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+.section-header-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+/* Premium-feeling numeric metric */
+.metric-value {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* Provider / severity / framework badges */
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.badge-rose    { background: rgba(244, 63, 94, 0.12); color: #fca5a5; border-color: rgba(244, 63, 94, 0.4); }
+.badge-amber   { background: rgba(245, 158, 11, 0.1); color: #fcd34d; border-color: rgba(245, 158, 11, 0.4); }
+.badge-emerald { background: rgba(16, 185, 129, 0.1); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.35); }
+.badge-slate   { background: rgba(100, 116, 139, 0.1); color: #cbd5e1; border-color: rgba(100, 116, 139, 0.35); }
+.badge-fuchsia { background: rgba(217, 70, 239, 0.1); color: #f0abfc; border-color: rgba(217, 70, 239, 0.4); }
+.badge-orange  { background: rgba(249, 115, 22, 0.1); color: #fdba74; border-color: rgba(249, 115, 22, 0.4); }
+.badge-blue    { background: rgba(59, 130, 246, 0.1); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); }
+.badge-violet  { background: rgba(167, 139, 250, 0.1); color: #c4b5fd; border-color: rgba(167, 139, 250, 0.4); }
+.badge-cyan    { background: rgba(34, 211, 238, 0.10); color: #67e8f9; border-color: rgba(34, 211, 238, 0.4); }
+
+/* Light-mode overrides — the dark-mode palette uses *-300 text on a
+   faint tint, which is pale-on-pale and disappears on near-white. Flip
+   to a *-700 foreground with a slightly stronger border. Same hue
+   family so a "rose" pill still reads as red in both themes. */
+:root[data-theme="light"] .badge-rose    { background: rgba(244, 63, 94, 0.10); color: #b91c1c; border-color: rgba(244, 63, 94, 0.45); }
+:root[data-theme="light"] .badge-amber   { background: rgba(245, 158, 11, 0.12); color: #b45309; border-color: rgba(245, 158, 11, 0.50); }
+:root[data-theme="light"] .badge-emerald { background: rgba(16, 185, 129, 0.10); color: #047857; border-color: rgba(16, 185, 129, 0.45); }
+:root[data-theme="light"] .badge-slate   { background: rgba(100, 116, 139, 0.10); color: #334155; border-color: rgba(100, 116, 139, 0.40); }
+:root[data-theme="light"] .badge-fuchsia { background: rgba(217, 70, 239, 0.10); color: #a21caf; border-color: rgba(217, 70, 239, 0.45); }
+:root[data-theme="light"] .badge-orange  { background: rgba(249, 115, 22, 0.10); color: #c2410c; border-color: rgba(249, 115, 22, 0.45); }
+:root[data-theme="light"] .badge-blue    { background: rgba(59, 130, 246, 0.10); color: #1d4ed8; border-color: rgba(59, 130, 246, 0.45); }
+:root[data-theme="light"] .badge-violet  { background: rgba(167, 139, 250, 0.12); color: #6d28d9; border-color: rgba(139, 92, 246, 0.45); }
+:root[data-theme="light"] .badge-cyan    { background: rgba(34, 211, 238, 0.12); color: #0e7490; border-color: rgba(8, 145, 178, 0.45); }
+
+/* Lifted nav header — sticky with backdrop blur */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--header-bg);
+  backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Subtle text gradient for the wordmark — light/dark palette swaps
+   the two stops via --wordmark-from / --wordmark-to. */
+.wordmark {
+  background: linear-gradient(135deg, var(--wordmark-from) 0%, var(--wordmark-to) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

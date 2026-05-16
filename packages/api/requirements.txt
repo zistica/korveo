@@ -1,0 +1,78 @@
+fastapi>=0.110
+uvicorn[standard]>=0.27
+duckdb>=0.10
+pydantic>=2.0
+# Policy Engine — Accountability Layer Part B, server-side evaluation.
+# Reuses the korveo Python SDK's PolicyEngine so server + SDK enforce
+# the SAME logic.
+#
+# IMPORTANT: the `korveo` import comes from the sibling `packages/sdk-python`
+# package, NOT a PyPI release. Install it first via:
+#     pip install -e ../sdk-python
+# (the repo-root setup.sh does this automatically). We do NOT list it
+# here because PyPI has an unrelated `korveo` package that would shadow
+# ours and pull pandas as a transitive — broken every fresh install.
+simpleeval>=0.9.13
+pyyaml>=6.0
+# OTel ingest endpoint (POST /v1/otlp/v1/traces). Decodes both
+# OTLP/HTTP protobuf and OTLP/HTTP JSON payloads from any
+# OpenTelemetry-compatible tool (Logfire, Phoenix, Datadog GenAI,
+# OpenLLMetry, etc.) without requiring the Korveo SDK. Stable since
+# 1.30; pinned to a recent minor to keep proto bindings consistent.
+opentelemetry-proto>=1.30
+# Microsoft Presidio for semantic PII detection (Tier 2.1 of the
+# firewall slice plan). Brings spaCy + a language model (~500MB
+# resident). Closes the cross-tenant leak gap where regex-only L3
+# misses person names, organizations, locations, and money amounts
+# (verified 2026-05-10 — see docs/firewall/cases/ for the live
+# Northstar Logistics / Meridian Health bypass that motivated the
+# enable). Module degrades gracefully (``available = False``) when
+# the package is missing OR the spaCy model isn't downloaded, so
+# light deployments can still skip the model download.
+#
+# spaCy model download happens at image-build time (Dockerfile);
+# alternatively run `python -m spacy download en_core_web_lg` in
+# your runtime if you're not using the published image.
+presidio-analyzer>=2.2.0
+# OPTIONAL — Meta Prompt Guard 2 for ML-based prompt-injection /
+# jailbreak detection (Slice 3 Tier 2.2). The 22M classifier
+# downloads ~90MB on first use and runs on CPU in <5ms. torch is
+# the heavy transitive (~700MB), so this is opt-in. Operators happy
+# with the regex / heuristic LLM01 rule can leave it uninstalled —
+# firewall.detectors.prompt_guard degrades gracefully
+# (``available = False``, score → 0.0). Activate by:
+#     pip install 'transformers>=4.40' 'torch>=2.1'
+# Model weights pull on first use; the HF model page is gated, so
+# accept the license once via `huggingface-cli login`.
+# transformers>=4.40
+# torch>=2.1
+# OPTIONAL — Meta Llama Guard 4 for response-side content safety
+# (Slice 3 Tier 2.3). The 12B model is ~24GB on disk, ~14GB
+# resident in fp16, and CPU inference is too slow for synchronous
+# evaluation (~500-1500ms/call). Most operators run it as a hosted
+# endpoint instead — the local-inference path is here for air-
+# gapped deployments with a GPU available. Activate by:
+#     pip install 'transformers>=4.40' 'torch>=2.1' 'accelerate>=0.30'
+# Model is HF-gated; accept the license once via `huggingface-cli login`.
+# accelerate>=0.30
+# OPTIONAL — Sentence-transformers for embedding-similarity detection
+# (Slice 3 Tier 2.4). Default model ``all-MiniLM-L6-v2`` is 22MB,
+# 384-dim, CPU inference <10ms — light enough to leave on by default
+# once installed. Operators build org-specific corpora (jailbreak
+# prompts, internal codenames) via /v1/firewall/corpora and reference
+# them from rules with ``similar_to_corpus(text, name, threshold)``.
+# Detector degrades gracefully (returns False / 0.0) when uninstalled.
+# Activate by:
+#     pip install 'sentence-transformers>=2.6'
+# (pulls torch as a transitive; if you've already opted into Prompt
+# Guard 2 above, that's already installed.)
+# sentence-transformers>=2.6
+# OPTIONAL — scikit-learn for the local fine-tuned classifier
+# (Slice 3 PR S — §6.8 / §11.6). The detector trains a
+# LogisticRegression over a TfidfVectorizer on the operator's
+# ``labels`` table and exposes ``org_classifier_score()`` /
+# ``org_classifier_predict()`` builtins. Trains in <60s on a few
+# hundred labels; sub-ms inference. Detector degrades gracefully
+# (score → 0.0) when uninstalled. Activate by:
+#     pip install 'scikit-learn>=1.3'
+# scikit-learn>=1.3

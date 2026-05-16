@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-label="korveo">
+  <rect width="1280" height="320" fill="#0B0E14"/>
+  <g transform="translate(96,64) scale(0.375)">
+    <circle cx="300" cy="252" r="132" fill="#E8EAED"/>
+    <path d="M356 140 L420 96 L388 178 Z" fill="#E8EAED"/>
+    <path d="M392 168 L452 150 L408 214 Z" fill="#E8EAED"/>
+    <path d="M150 252 L312 218 L312 300 Z" fill="#E8EAED"/>
+    <path d="M150 252 L300 252 L300 270 Z" fill="#0B0E14"/>
+    <circle cx="332" cy="224" r="30" fill="#0B0E14"/>
+    <circle cx="332" cy="224" r="15" fill="#22D3EE"/>
+  </g>
+  <text x="300" y="150" font-family="'Space Grotesk',Inter,system-ui,sans-serif" font-size="104" font-weight="700" fill="#E8EAED" letter-spacing="-2">korveo</text>
+  <text x="304" y="208" font-family="Inter,system-ui,sans-serif" font-size="34" fill="#9AA3AF">the firewall &amp; flight recorder for AI agents</text>
+</svg>

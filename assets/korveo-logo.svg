@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="korveo">
+  <rect width="512" height="512" rx="116" fill="#0B0E14"/>
+  <circle cx="300" cy="252" r="132" fill="#E8EAED"/>
+  <path d="M356 140 L420 96 L388 178 Z" fill="#E8EAED"/>
+  <path d="M392 168 L452 150 L408 214 Z" fill="#E8EAED"/>
+  <path d="M150 252 L312 218 L312 300 Z" fill="#E8EAED"/>
+  <path d="M150 252 L300 252 L300 270 Z" fill="#0B0E14"/>
+  <circle cx="332" cy="224" r="30" fill="#0B0E14"/>
+  <circle cx="332" cy="224" r="15" fill="#22D3EE"/>
+  <path d="M150 252 L40 252" stroke="#22D3EE" stroke-width="10" stroke-linecap="round" opacity="0.85"/>
+</svg>

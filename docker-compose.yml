@@ -1,0 +1,115 @@
+# Korveo Agent Firewall — single-container orchestration.
+#
+# What this gives you in one shot:
+#   - API on :8000, dashboard on :3000, both inside one container
+#   - DuckDB persisted in a named volume across restarts
+#   - Healthcheck so `docker compose up -d --wait` returns clean
+#   - Sane resource ceilings for a 2-core / 4GB VPS
+#
+# Quick start:
+#   docker compose up -d
+#   open http://localhost:3000
+#
+# For VPS deployment, the dashboard at :3000 has NO authentication by
+# default. Use one of:
+#   1. SSH tunnel:  ssh -L 3000:localhost:3000 user@vps
+#   2. Tailscale:   bind to a Tailscale interface IP
+#   3. Auth env:    set KORVEO_DASHBOARD_PASSWORD + KORVEO_API_TOKEN
+#                   (Slice 5B; not yet wired here — coming next)
+#
+# Never bind :3000 to a public 0.0.0.0 without one of the above —
+# every trace, decision, and prompt is visible to anyone who finds
+# the URL.
+
+services:
+  korveo:
+    image: zistica/korveo:latest
+    # Build locally if you don't want to pull from Docker Hub. Comment
+    # out for production deployments — `docker pull` should be the
+    # only way to get the bits.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: korveo
+    restart: unless-stopped
+
+    ports:
+      # API port — agent integrations / SDK clients hit this directly.
+      # Only expose to localhost on a public VPS unless you've
+      # configured KORVEO_API_TOKEN.
+      - "127.0.0.1:8000:8000"
+      # Dashboard. Same warning — localhost-only on a public VPS
+      # unless KORVEO_DASHBOARD_PASSWORD is set.
+      - "127.0.0.1:3000:3000"
+
+    volumes:
+      # All persistent state — traces.duckdb, meta.sqlite, classifier
+      # ONNX artifacts, vault rows. Named volume so `docker compose
+      # down` doesn't nuke months of training data.
+      - korveo-data:/data
+
+    environment:
+      # Where DuckDB lives inside the container. Must match the volume
+      # mount above. Override only if you know what you're doing.
+      KORVEO_DATA_DIR: /data
+      # 90-day retention default. Bump to 365 for compliance use cases
+      # (HIPAA: 6 years; we don't enforce that — that's an operational
+      # decision per deployment).
+      KORVEO_RETENTION_DAYS: ${KORVEO_RETENTION_DAYS:-90}
+      KORVEO_RETENTION_TRACES: ${KORVEO_RETENTION_TRACES:-50000}
+      # Project tag stamped onto every trace ingested without an
+      # explicit X-Korveo-Project header. Useful when one Korveo
+      # instance is shared across a dev team — pick a deployment
+      # name and stick with it.
+      KORVEO_PROJECT: ${KORVEO_PROJECT:-default}
+      # Set to "true" to skip the OWASP starter pack auto-install
+      # (you have your own pack you want to install via the library
+      # API instead). Default behavior — pack auto-loads.
+      KORVEO_DISABLE_STARTER_PACK: ${KORVEO_DISABLE_STARTER_PACK:-}
+
+      # ----- Webhook / notification config (Slice 4 §9.10/§9.11) ----
+      # SMTP for email notifications. Leave blank to disable email
+      # webhook delivery; Slack/Discord/PagerDuty work without these.
+      KORVEO_SMTP_HOST: ${KORVEO_SMTP_HOST:-}
+      KORVEO_SMTP_PORT: ${KORVEO_SMTP_PORT:-587}
+      KORVEO_SMTP_USERNAME: ${KORVEO_SMTP_USERNAME:-}
+      KORVEO_SMTP_PASSWORD: ${KORVEO_SMTP_PASSWORD:-}
+      KORVEO_SMTP_FROM: ${KORVEO_SMTP_FROM:-korveo-firewall@localhost}
+      KORVEO_SMTP_USE_TLS: ${KORVEO_SMTP_USE_TLS:-true}
+
+    healthcheck:
+      # The container reports healthy when /health returns 200. Hits
+      # the API directly (not via the dashboard rewrite) so a slow
+      # Next.js boot doesn't fail the check.
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:8000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+    # Conservative ceilings: a 2-vCPU / 4GB box is the minimum
+    # supported config. Tune up per your traffic — the API is
+    # I/O-bound (DuckDB), the dashboard is CPU-light Next.js
+    # standalone.
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 4G
+        reservations:
+          cpus: "0.25"
+          memory: 512M
+
+    # Default Docker network — fine for the all-in-one image. When
+    # adding sidecar services (e.g., a custom OpenAI proxy) put them
+    # on a custom network so DNS works between containers.
+
+# --- volumes ---
+#
+# Named volume — driver-default (local). For a VPS deployment
+# pointed at a managed disk, use a bind-mount to /var/lib/korveo
+# instead and back that path up nightly.
+
+volumes:
+  korveo-data:
+    driver: local

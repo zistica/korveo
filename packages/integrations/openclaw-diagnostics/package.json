@@ -1,0 +1,67 @@
+{
+  "name": "@korveo/openclaw-diagnostics",
+  "version": "0.7.1",
+  "description": "Korveo observability + Agent Firewall for OpenClaw \u2014 captures prompts, responses, tool I/O, and synchronously enforces firewall policies on every tool call.",
+  "homepage": "https://github.com/zistica/korveo/tree/main/packages/integrations/openclaw-diagnostics",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zistica/korveo.git",
+    "directory": "packages/integrations/openclaw-diagnostics"
+  },
+  "bugs": {
+    "url": "https://github.com/zistica/korveo/issues"
+  },
+  "keywords": [
+    "openclaw",
+    "korveo",
+    "observability",
+    "tracing",
+    "opentelemetry",
+    "ai-agent",
+    "llm-monitoring"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "openclaw.plugin.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc && node scripts/sync-extension.mjs",
+    "test": "vitest run",
+    "sync-extension": "node scripts/sync-extension.mjs"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.4.25"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^2.1.9"
+  },
+  "openclaw": {
+    "extensions": [
+      "./dist/index.js"
+    ],
+    "install": {
+      "npmSpec": "@korveo/openclaw-diagnostics",
+      "defaultChoice": "npm",
+      "minHostVersion": ">=2026.4.25"
+    },
+    "compat": {
+      "pluginApi": ">=2026.5.4"
+    },
+    "build": {
+      "openclawVersion": "2026.5.4"
+    }
+  }
+}
