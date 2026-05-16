@@ -60,6 +60,20 @@ async def _cleanup_loop(db: Database, retention_days: int, interval_seconds: int
             logger.exception("retention cleanup failed (will retry next interval)")
 
 
+async def _checkpoint_loop(db: Database, interval_seconds: int) -> None:
+    """Background task: every `interval_seconds`, CHECKPOINT the WAL so
+    an unclean stop loses at most one interval of writes (bounded loss),
+    not the entire session. Failures are logged, never crash the loop."""
+    while True:
+        try:
+            await asyncio.sleep(interval_seconds)
+            db.checkpoint()
+        except asyncio.CancelledError:
+            break
+        except Exception:
+            logger.exception("periodic checkpoint failed (will retry)")
+
+
 async def _policy_watch_loop(interval_seconds: int = 30) -> None:
     """Background task: keep the in-memory engine in sync with its
     source of truth.
@@ -155,6 +169,19 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
             )
         except Exception:
             logger.exception("could not start retention cleanup task")
+
+    # Periodic WAL checkpoint — bounds unclean-stop data loss to one
+    # interval instead of the whole session. Default 60s; tune via
+    # KORVEO_CHECKPOINT_INTERVAL_SECONDS (0 disables).
+    checkpoint_task: asyncio.Task[None] | None = None
+    try:
+        _ckpt_int = int(os.environ.get("KORVEO_CHECKPOINT_INTERVAL_SECONDS", "60"))
+        if _ckpt_int > 0:
+            checkpoint_task = asyncio.create_task(
+                _checkpoint_loop(get_db(), _ckpt_int)
+            )
+    except Exception:
+        logger.exception("could not start periodic checkpoint task")
 
     # Backup destination — POST /v1/admin/backups writes snapshots to
     # ``${KORVEO_BACKUP_DIR}`` or ``${KORVEO_DATA_DIR}/backups``. Without
@@ -288,6 +315,12 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         cleanup_task.cancel()
         try:
             await cleanup_task
+        except (asyncio.CancelledError, Exception):
+            pass
+    if checkpoint_task is not None:
+        checkpoint_task.cancel()
+        try:
+            await checkpoint_task
         except (asyncio.CancelledError, Exception):
             pass
     if policy_watch_task is not None:

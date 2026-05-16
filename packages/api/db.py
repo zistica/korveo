@@ -367,6 +367,21 @@ class Database:
             )
             return len(old)
 
+    def checkpoint(self) -> None:
+        """Flush the WAL into the main DB file.
+
+        Called periodically by a background loop so an *unclean* stop
+        (docker kill / OOM / host crash) loses at most one checkpoint
+        interval of writes instead of the whole session — turning the
+        WAL story from "self-heal but lose the session" into "bounded
+        loss". Lock-serialized like every other DuckDB write; idempotent
+        and ~free on an empty WAL. Never raises (Rule 7)."""
+        with self._lock:
+            try:
+                self._duck.execute("CHECKPOINT")
+            except Exception:
+                pass
+
     def close(self) -> None:
         # CHECKPOINT before close — DuckDB normally flushes the WAL on
         # close(), but doing it explicitly first makes the failure mode
