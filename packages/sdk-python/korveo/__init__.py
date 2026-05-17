@@ -11,4 +11,4 @@ __all__ = [
     "get_current_span",
     "get_current_session",
 ]
-__version__ = "1.0.2"
+__version__ = "1.0.3"
