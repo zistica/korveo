@@ -13,7 +13,7 @@ npm install @korveo/voltagent
 You also need a running Korveo instance:
 
 ```bash
-docker run -p 3000:3000 -p 8000:8000 korveo/korveo
+docker run -p 3000:3000 -p 8000:8000 zistica/korveo
 ```
 
 ## Usage

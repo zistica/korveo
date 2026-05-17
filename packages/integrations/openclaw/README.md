@@ -10,7 +10,7 @@ Works out of the box on any OpenClaw release that ships [`diagnostics-otel`](htt
 
 ```bash
 # Step 1 — start Korveo
-docker run -p 3000:3000 -p 8000:8000 korveo/korveo
+docker run -p 3000:3000 -p 8000:8000 zistica/korveo
 
 # Step 2 — enable diagnostics + point OpenClaw at Korveo
 openclaw config set diagnostics.enabled true
@@ -46,7 +46,7 @@ npm install @korveo/openclaw
 You also need a running Korveo instance:
 
 ```bash
-docker run -p 3000:3000 -p 8000:8000 korveo/korveo
+docker run -p 3000:3000 -p 8000:8000 zistica/korveo
 ```
 
 ## Usage — wired into OpenClaw's diagnostics

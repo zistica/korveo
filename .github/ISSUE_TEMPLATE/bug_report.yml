@@ -27,7 +27,7 @@ body:
     attributes:
       label: What happened?
       description: A clear and concise description of the bug.
-      placeholder: When I run `docker run korveo/korveo`, the container exits immediately with...
+      placeholder: When I run `docker run zistica/korveo`, the container exits immediately with...
     validations:
       required: true
 
@@ -45,7 +45,7 @@ body:
       label: Steps to reproduce
       description: Minimal, runnable steps. Include code snippets if relevant.
       placeholder: |
-        1. Run `docker run -p 3000:3000 korveo/korveo`
+        1. Run `docker run -p 3000:3000 zistica/korveo`
         2. Open http://localhost:3000
         3. See error in console
       render: bash

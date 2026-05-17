@@ -5,14 +5,14 @@ name: Publish (Docker + npm + ClawHub)
 # so by the time a tag exists the build is known good. This workflow's
 # job is just to push the published bits to:
 #
-#   - Docker Hub  (korveo/korveo image)
+#   - Docker Hub  (zistica/korveo image)
 #   - npm         (@korveo/{openclaw, mastra, voltagent,
 #                  openclaw-diagnostics})
 #   - ClawHub     (korveo-diagnostics — OpenClaw plugin marketplace)
 #
 # Why tag-triggered (not main-push)?
 #   Every merge would ship a new :latest, which surprises users who
-#   `docker pull korveo/korveo` expecting yesterday's behavior. Tags
+#   `docker pull zistica/korveo` expecting yesterday's behavior. Tags
 #   are an explicit "ship this" signal — same pattern as Sentry,
 #   Grafana, and the OTel collector.
 #
@@ -46,7 +46,7 @@ concurrency:
 
 jobs:
   publish:
-    name: Build + push korveo/korveo
+    name: Build + push zistica/korveo
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -72,15 +72,15 @@ jobs:
           # only" — useful for re-publishing main without a version bump.
           if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
             VERSION="${GITHUB_REF_NAME#v}"
-            TAGS="korveo/korveo:${VERSION},korveo/korveo:latest"
+            TAGS="zistica/korveo:${VERSION},zistica/korveo:latest"
           else
             DISPATCH_TAG="${{ github.event.inputs.tag }}"
             if [ -n "${DISPATCH_TAG}" ]; then
               VERSION="${DISPATCH_TAG#v}"
-              TAGS="korveo/korveo:${VERSION},korveo/korveo:latest"
+              TAGS="zistica/korveo:${VERSION},zistica/korveo:latest"
             else
               VERSION="(latest only)"
-              TAGS="korveo/korveo:latest"
+              TAGS="zistica/korveo:latest"
             fi
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
@@ -117,13 +117,13 @@ jobs:
 
       - name: Summary
         run: |
-          echo "### :rocket: Published \`korveo/korveo\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "### :rocket: Published \`zistica/korveo\`" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Tags: \`${{ steps.tags.outputs.tags }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "Version: \`${{ steps.tags.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "Platforms: \`linux/amd64\`, \`linux/arm64\`" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Pull with: \`docker pull korveo/korveo:${{ steps.tags.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Pull with: \`docker pull zistica/korveo:${{ steps.tags.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
 
 
   # ----- npm publish -----------------------------------------------------

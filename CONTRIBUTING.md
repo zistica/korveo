@@ -145,8 +145,8 @@ cd packages/integrations/voltagent && npm ci && cd ../../..
 
 ```bash
 # Option 1: Docker (recommended — runs everything)
-docker build -t korveo/korveo .
-docker run -p 3000:3000 korveo/korveo
+docker build -t zistica/korveo .
+docker run -p 3000:3000 zistica/korveo
 
 # Option 2: Run services separately (for development)
 # Terminal 1 — API

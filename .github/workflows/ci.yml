@@ -187,7 +187,7 @@ jobs:
           context: .
           push: false
           load: true
-          tags: korveo/korveo:ci
+          tags: zistica/korveo:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Smoke-test the container
@@ -204,7 +204,7 @@ jobs:
           # traffic look non-loopback inside the container, which the
           # safe-by-default guard 403s without this. (Production on
           # 0.0.0.0 uses KORVEO_API_TOKEN instead — see docker-compose.)
-          docker run -d --name korveo-ci -e KORVEO_ALLOW_INSECURE=1 -p 3000:3000 -p 8000:8000 korveo/korveo:ci
+          docker run -d --name korveo-ci -e KORVEO_ALLOW_INSECURE=1 -p 3000:3000 -p 8000:8000 zistica/korveo:ci
           if [ $? -ne 0 ]; then
             echo "::error::docker run failed"
             exit 1
@@ -292,13 +292,13 @@ jobs:
           context: .
           push: false
           load: true
-          tags: korveo/korveo:e2e
+          tags: zistica/korveo:e2e
           cache-from: type=gha
       - name: Start container
         run: |
           # Safe-by-default 403s the runner→container Docker-NAT IP
           # without this; CI is trusted + ephemeral (prod uses a token).
-          docker run -d --name korveo-e2e -e KORVEO_ALLOW_INSECURE=1 -p 3000:3000 -p 8000:8000 korveo/korveo:e2e
+          docker run -d --name korveo-e2e -e KORVEO_ALLOW_INSECURE=1 -p 3000:3000 -p 8000:8000 zistica/korveo:e2e
           for i in $(seq 1 30); do
             sleep 1
             curl -sf http://127.0.0.1:8000/health >/dev/null 2>&1 && break

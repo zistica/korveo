@@ -34,7 +34,7 @@ echo "▸ starting a clean Korveo (port 8000/3000) …"
 docker rm -f korveo-rec >/dev/null 2>&1 || true
 docker run -d --name korveo-rec \
   -p 127.0.0.1:3000:3000 -p 127.0.0.1:8000:8000 \
-  -v korveo-rec-data:/data korveo/korveo:latest >/dev/null
+  -v korveo-rec-data:/data zistica/korveo:latest >/dev/null
 
 echo "▸ waiting for health …"
 for _ in $(seq 1 120); do

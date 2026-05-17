@@ -45,7 +45,7 @@ Run: `node $SKILL_DIR/korveo.mjs status`
 Returns one of:
 
 - `Korveo is running on http://localhost:8000`
-- `Korveo is not running on …. Start with: docker run -p 3000:3000 -p 8000:8000 korveo/korveo`
+- `Korveo is not running on …. Start with: docker run -p 3000:3000 -p 8000:8000 zistica/korveo`
 
 ### Show recent traces
 
@@ -84,7 +84,7 @@ npm install @korveo/openclaw
 ### Start Korveo (if not running)
 
 ```bash
-docker run -p 3000:3000 -p 8000:8000 korveo/korveo
+docker run -p 3000:3000 -p 8000:8000 zistica/korveo
 ```
 
 Then open <http://localhost:3000>.

@@ -105,7 +105,7 @@ Log a single warning (only once, not on every span) like:
 ```
 [Korveo] Cannot connect to http://localhost:8000. 
 Spans will be dropped until the server is available.
-Run: docker run -p 3000:3000 korveo/korveo
+Run: docker run -p 3000:3000 zistica/korveo
 ```
 
 ## Rules
