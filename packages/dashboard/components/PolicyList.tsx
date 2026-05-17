@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import useSWR from 'swr';
 import { fetcher, Policy, PolicyListResponse } from '@/lib/api';
+import { policyHelp } from '@/lib/policyHelp';
 
 /**
  * Top-level list of policies — one card per policy with severity badge,
@@ -198,6 +199,7 @@ function PolicyCard({ policy }: { policy: Policy }) {
       <div className="flex items-center gap-3 mb-2 flex-wrap">
         <span className={sevCls}>{policy.severity}</span>
         <h3 className="font-mono text-sm font-medium tracking-tight">{policy.name}</h3>
+        <PolicyHelpDot name={policy.name} description={policy.description} />
         {isFirewallLifecycle ? (
           <span className="badge badge-violet">{policy.lifecycle}</span>
         ) : (
@@ -246,4 +248,37 @@ function modeHelp(mode: string): string {
     default:
       return mode;
   }
+}
+
+/**
+ * The "?" next to each policy name. Pure-CSS hover popover with a
+ * plain-English explanation so a non-technical operator can decide
+ * what to enable without reading the DSL. preventDefault on click so
+ * tapping the "?" doesn't navigate the card's Link.
+ */
+function PolicyHelpDot({ name, description }: { name: string; description?: string | null }) {
+  const h = policyHelp(name, description);
+  return (
+    <span
+      className="relative group/help inline-flex"
+      onClick={(e) => e.preventDefault()}
+    >
+      <span
+        className="flex items-center justify-center w-4 h-4 rounded-full border border-[var(--border)] text-[10px] leading-none text-[var(--muted)] cursor-help select-none hover:text-[var(--foreground)] hover:border-[var(--foreground-soft)] transition-colors"
+        aria-label={`What does ${name} do?`}
+      >
+        ?
+      </span>
+      <span
+        className="pointer-events-none absolute left-6 top-0 z-30 w-72 rounded-lg border border-[var(--border)] p-3 text-xs leading-relaxed shadow-xl opacity-0 group-hover/help:opacity-100 transition-opacity"
+        style={{ background: 'var(--background-elevated, #16181d)' }}
+        role="tooltip"
+      >
+        <span className="block font-semibold text-[var(--foreground)] mb-1">What it does</span>
+        <span className="block text-[var(--muted)] mb-2.5">{h.what}</span>
+        <span className="block font-semibold text-[var(--foreground)] mb-1">Turn it on if…</span>
+        <span className="block text-[var(--muted)]">{h.when}</span>
+      </span>
+    </span>
+  );
 }
