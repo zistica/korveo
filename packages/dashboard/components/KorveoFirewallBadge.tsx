@@ -51,11 +51,19 @@ export function KorveoFirewallBadge({
     return 'bg-slate-500/10 text-slate-300 border-slate-500/30';
   })();
 
+  // Compact list view (`sm`) lives in a narrow fixed-width table
+  // column — use short single-token labels and DROP the policy
+  // suffix (it's in the tooltip + the trace detail page). Full
+  // "Korveo …" phrasing is kept only for the larger `lg` variant.
+  const isSm = size !== 'lg';
   const verbLabel = (() => {
-    if (verb === 'block') return blocked ? 'Korveo blocked' : 'Korveo would block';
-    if (verb === 'require_approval') return 'Korveo: approval required';
-    if (verb === 'rewrite') return 'Korveo redacted';
-    return 'Korveo observed';
+    if (verb === 'block') {
+      if (isSm) return blocked ? 'Blocked' : 'Would block';
+      return blocked ? 'Korveo blocked' : 'Korveo would block';
+    }
+    if (verb === 'require_approval') return isSm ? 'Approval' : 'Korveo: approval required';
+    if (verb === 'rewrite') return isSm ? 'Redacted' : 'Korveo redacted';
+    return isSm ? 'Observed' : 'Korveo observed';
   })();
 
   const sizeCls =
@@ -65,7 +73,7 @@ export function KorveoFirewallBadge({
 
   return (
     <span
-      className={`inline-flex items-center rounded border font-medium font-mono ${palette} ${sizeCls}`}
+      className={`inline-flex items-center rounded border font-medium font-mono ${palette} ${sizeCls} max-w-full overflow-hidden`}
       title={
         policy
           ? `Korveo firewall: ${policy} (${verb ?? 'observed'}) — ${count} decision${count === 1 ? '' : 's'} on this trace`
@@ -73,8 +81,8 @@ export function KorveoFirewallBadge({
       }
     >
       <ShieldIcon size={size} />
-      <span>{verbLabel}</span>
-      {policy ? (
+      <span className="truncate">{verbLabel}</span>
+      {policy && !isSm ? (
         <span className="opacity-70 truncate max-w-[14ch]">· {policy}</span>
       ) : null}
     </span>

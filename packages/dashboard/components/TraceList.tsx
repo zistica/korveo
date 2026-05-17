@@ -171,7 +171,7 @@ export default function TraceList() {
                 <div>
                   <StatusBadge value={deriveStatus(t)} />
                 </div>
-                <div className="flex items-center gap-1.5 flex-wrap">
+                <div className="flex items-center gap-1.5 flex-wrap min-w-0 overflow-hidden">
                   <ViolationBadge count={t.violation_count ?? 0} />
                   <KorveoFirewallBadge trace={t} />
                 </div>
