@@ -963,6 +963,127 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
 
 # ===========================================================================
+# `korveo protect` — the plain-English front door to policies. No DSL,
+# no lifecycle/trigger jargon: pick a ready-made protection pack by a
+# friendly name, one command turns it on. Authoring raw rules is for
+# power users; 90% should never see a `condition:` expression.
+# ===========================================================================
+
+# Friendly aliases → real pack_id. Users type `korveo protect owasp`,
+# not `korveo protect owasp_llm_top_10`.
+_PACK_ALIASES = {
+    "owasp": "owasp_llm_top_10",
+    "owasp-agentic": "owasp_agentic_2025",
+    "gdpr": "compliance_gdpr",
+    "hipaa": "compliance_hipaa",
+    "pci": "compliance_pci_dss",
+    "cost": "cost_guards",
+    "support": "customer_support_agent",
+    "dev": "dev_environment_safety",
+    "code": "code_assistant",
+    "tenant": "cross_session_isolation",
+    "langgraph": "framework_langgraph",
+    "mastra": "framework_mastra",
+}
+
+
+def cmd_protect(args: argparse.Namespace) -> int:
+    host = args.host
+    header()
+    if not _api_reachable(host):
+        bad("can't reach Korveo", host)
+        out("start it first →  " + accent("korveo quickstart", True))
+        return 1
+    client = _client(host)
+
+    pack_arg = getattr(args, "pack", None)
+
+    # No pack named → show the plain-English menu, nothing else.
+    if not pack_arg:
+        section("protect", "Ready-made protection",
+                "turn a whole pack on with one command — no rules to write")
+        code, body = _get(client, "/v1/firewall/library")
+        packs = body.get("packs", []) if isinstance(body, dict) else []
+        # reverse alias map for display
+        ralias = {v: k for k, v in _PACK_ALIASES.items()}
+        rows = [""]
+        rows.append(f"{bold('protect this'):<22}{muted('what it blocks')}")
+        rows.append(_paint("─" * (WIDTH - 3), "line"))
+        for p in packs:
+            pid = p.get("pack_id", "")
+            short = ralias.get(pid, pid)
+            desc = (p.get("description") or "").strip().replace("\n", " ")
+            rows.append(f"{accent(short, True):<22}{muted(_short(desc, 34))}")
+        rows.append("")
+        print()
+        panel(rows, title="korveo protect")
+        print()
+        out("turn one on:   " + accent("korveo protect owasp", True)
+            + muted("   (adds it in shadow — safe, records only)"))
+        out("go live:       " + accent("korveo protect owasp --enforce", True)
+            + muted("   (actually blocks)"))
+        out(muted("shadow first is the point — watch /decisions, then --enforce."))
+        print()
+        return 0
+
+    # Resolve friendly alias → pack_id (alias, exact, or prefix match).
+    code, body = _get(client, "/v1/firewall/library")
+    all_ids = [p.get("pack_id", "") for p in (body.get("packs", []) if isinstance(body, dict) else [])]
+    pid = _PACK_ALIASES.get(pack_arg, pack_arg)
+    if pid not in all_ids:
+        cand = [i for i in all_ids if pack_arg in i]
+        if len(cand) == 1:
+            pid = cand[0]
+        elif not cand:
+            section("protect", "Unknown pack", pack_arg)
+            bad("no protection pack matches", pack_arg)
+            out("see the list →  " + accent("korveo protect", True))
+            return 1
+        else:
+            bad("ambiguous — matches", ", ".join(cand))
+            return 1
+
+    enforce = bool(getattr(args, "enforce", False))
+    section("protect", pid,
+            ("enable + ENFORCE (blocks for real)" if enforce
+             else "enable in shadow (records only — safe)"))
+
+    # 1. import the pack (idempotent; lands in shadow per spec).
+    ic, ibody = _post(client, f"/v1/firewall/library/{pid}/import", {})
+    if ic not in (200, 201) or not isinstance(ibody, dict):
+        bad("import failed", f"HTTP {ic}")
+        return 1
+    imp = ibody.get("imported", 0)
+    dup = ibody.get("skipped_duplicates", 0)
+    ok(f"pack '{pid}'",
+       f"{imp} rule(s) added, {dup} already present")
+
+    # 2. optionally flip every rule in the pack to enforce.
+    if enforce:
+        pc, pbody = _get(client, f"/v1/firewall/library/{pid}")
+        names = [x.get("name") for x in (pbody.get("policies", []) if isinstance(pbody, dict) else []) if x.get("name")]
+        flipped = 0
+        for n in names:
+            mc, _ = _post(client, f"/v1/policies/{n}/mode", {"mode": "enforce"})
+            if mc == 200:
+                flipped += 1
+        if flipped:
+            ok(f"{flipped} rule(s) now ENFORCING", "blocking live")
+        else:
+            warn("nothing flipped to enforce", "check /policies")
+    else:
+        out(muted("rules are in shadow — they record what they'd do but"))
+        out(muted("don't block yet. review, then re-run with --enforce:"))
+        out("  " + accent(f"korveo protect {pack_arg} --enforce", True))
+
+    print()
+    out("see it work →  " + info(args.dashboard + "/decisions")
+        + muted("   ·   policies: ") + info(args.dashboard + "/policies"))
+    print()
+    return 0
+
+
+# ===========================================================================
 # `korveo quickstart` — the one-command, zero-config path: install →
 # start the container → instrument a real agent → block a live attack →
 # open the dashboard. Everything, in one shot, no flags required.
@@ -1065,6 +1186,16 @@ def _build_parser() -> argparse.ArgumentParser:
     dr.add_argument("--dashboard", default=DEFAULT_DASHBOARD, help="dashboard URL")
     dr.set_defaults(func=cmd_doctor)
 
+    pr = sub.add_parser("protect",
+                        help="turn on a ready-made protection pack (no rules to write)")
+    pr.add_argument("pack", nargs="?", default=None,
+                    help="pack name (owasp, gdpr, hipaa, cost, support, dev…); omit to list")
+    pr.add_argument("--enforce", action="store_true",
+                    help="actually block (default: shadow / record-only)")
+    pr.add_argument("--host", default=DEFAULT_API, help="Korveo API base URL")
+    pr.add_argument("--dashboard", default=DEFAULT_DASHBOARD, help="dashboard URL")
+    pr.set_defaults(func=cmd_protect)
+
     sc = sub.add_parser("scorecard",
                         help="grade your firewall vs the OWASP LLM Top-10 attack suite")
     sc.add_argument("--host", default=DEFAULT_API, help="Korveo API base URL")
@@ -1099,6 +1230,7 @@ def _splash() -> None:
     for cmd, desc in (
         ("korveo up", "just start Korveo + open the dashboard"),
         ("korveo demo", "watch the firewall block a live attack"),
+        ("korveo protect", "turn on a protection pack (no rules to write)"),
         ("korveo scorecard", "grade your firewall vs OWASP LLM Top-10"),
         ("korveo doctor", "connectivity + which detectors are live"),
     ):

@@ -300,3 +300,47 @@ def test_scorecard_target_skips_unreachable_replies(monkeypatch, capsys):
     assert payload["skipped"] == 1
     assert payload["attacks_delivered"] == 0
     cli.set_quiet(False)
+
+
+def test_protect_menu_lists_packs(monkeypatch, capsys):
+    monkeypatch.setattr(cli, "_api_reachable", lambda h: True)
+    monkeypatch.setattr(cli, "_client", lambda h: object())
+    monkeypatch.setattr(cli, "_get", lambda c, p: (200, {"packs": [
+        {"pack_id": "owasp_llm_top_10", "description": "OWASP LLM01-10"},
+        {"pack_id": "compliance_gdpr", "description": "GDPR rules"},
+    ]}))
+    rc = cli.main(["protect", "--host", "http://x"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "owasp" in out and "gdpr" in out          # friendly aliases shown
+    assert "korveo protect owasp --enforce" in out    # the go-live hint
+    assert "condition" not in out and "lifecycle" not in out  # NO DSL jargon
+
+
+def test_protect_pack_enforce_imports_and_flips(monkeypatch, capsys):
+    monkeypatch.setattr(cli, "_api_reachable", lambda h: True)
+    monkeypatch.setattr(cli, "_client", lambda h: object())
+    flips = []
+
+    def fake_get(c, p):
+        if p == "/v1/firewall/library":
+            return 200, {"packs": [{"pack_id": "owasp_llm_top_10", "description": "x"}]}
+        if p == "/v1/firewall/library/owasp_llm_top_10":
+            return 200, {"policies": [{"name": "r1"}, {"name": "r2"}]}
+        return 200, {}
+
+    def fake_post(c, p, b):
+        if p.endswith("/import"):
+            return 200, {"imported": 2, "skipped_duplicates": 0}
+        if p.endswith("/mode"):
+            flips.append(p)
+            return 200, {}
+        return 200, {}
+
+    monkeypatch.setattr(cli, "_get", fake_get)
+    monkeypatch.setattr(cli, "_post", fake_post)
+    rc = cli.main(["protect", "owasp", "--enforce", "--host", "http://x"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert len(flips) == 2                              # both rules flipped to enforce
+    assert "ENFORCING" in out
