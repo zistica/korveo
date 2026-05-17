@@ -40,7 +40,7 @@ __all__ = ["main"]
 
 DEFAULT_API = os.environ.get("KORVEO_HOST", "http://localhost:8000")
 DEFAULT_DASHBOARD = os.environ.get("KORVEO_DASHBOARD", "http://localhost:3000")
-DEFAULT_IMAGE = os.environ.get("KORVEO_IMAGE", "zistica/korveo:latest")
+DEFAULT_IMAGE = os.environ.get("KORVEO_IMAGE", "korveo/korveo:latest")
 
 
 # ===========================================================================

@@ -70,7 +70,7 @@ Tradeoff: traffic × effort.
 |---|---|---|
 | GitHub repo | <https://github.com/zistica/korveo> | live |
 | GitHub release | <https://github.com/zistica/korveo/releases/tag/v0.1.0> | live |
-| Docker image | <https://hub.docker.com/r/zistica/korveo> | live (multi-arch: linux/amd64 + linux/arm64) |
+| Docker image | <https://hub.docker.com/r/korveo/korveo> | live (multi-arch: linux/amd64 + linux/arm64) |
 | ClawHub skill | `clawhub install korveo` | live |
 | awesome-openclaw-agents PR | <https://github.com/mergisi/awesome-openclaw-agents/pull/61> | open, awaiting maintainer |
 | OpenClaw Discord post | `#clawhub` on <https://discord.gg/clawd> | posted |

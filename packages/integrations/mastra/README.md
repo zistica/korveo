@@ -13,7 +13,7 @@ npm install @korveo/mastra
 You also need a running Korveo instance:
 
 ```bash
-docker run -p 3000:3000 -p 8000:8000 zistica/korveo
+docker run -p 3000:3000 -p 8000:8000 korveo/korveo
 ```
 
 ## Usage — explicit (recommended for Mastra)

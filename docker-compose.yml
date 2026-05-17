@@ -23,7 +23,7 @@
 
 services:
   korveo:
-    image: zistica/korveo:latest
+    image: korveo/korveo:latest
     # Build locally if you don't want to pull from Docker Hub. Comment
     # out for production deployments — `docker pull` should be the
     # only way to get the bits.

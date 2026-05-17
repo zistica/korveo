@@ -64,7 +64,7 @@ async function cmdStatus() {
   }
   return (
     `Korveo is not running on ${HOST}.\n` +
-    `Start it with: docker run -p 3000:3000 -p 8000:8000 zistica/korveo`
+    `Start it with: docker run -p 3000:3000 -p 8000:8000 korveo/korveo`
   );
 }
 
@@ -73,7 +73,7 @@ async function cmdTraces() {
   if (!Array.isArray(traces)) {
     return (
       `Could not reach Korveo at ${HOST}.\n` +
-      `Start it with: docker run -p 3000:3000 -p 8000:8000 zistica/korveo`
+      `Start it with: docker run -p 3000:3000 -p 8000:8000 korveo/korveo`
     );
   }
   if (traces.length === 0) {

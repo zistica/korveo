@@ -60,7 +60,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - FastAPI ingest and query API
 - DuckDB local storage (traces, spans, evals)
 - Next.js dashboard with span timeline
-- Single Docker image: `docker run -p 3000:3000 zistica/korveo`
+- Single Docker image: `docker run -p 3000:3000 korveo/korveo`
 - LangChain integration
 - CrewAI integration
 - TypeScript SDK

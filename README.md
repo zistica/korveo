@@ -35,8 +35,8 @@
    <a href="https://github.com/zistica/korveo/commits/main">
       <img src="https://img.shields.io/github/last-commit/zistica/korveo?labelColor=%20%2332b583&color=%20%2312b76a" alt="Last commit">
    </a>
-   <a href="https://hub.docker.com/r/zistica/korveo">
-      <img src="https://img.shields.io/badge/docker-zistica%2Fkorveo-2496ed?logo=docker" alt="Docker">
+   <a href="https://hub.docker.com/r/korveo/korveo">
+      <img src="https://img.shields.io/badge/docker-korveo%2Fkorveo-2496ed?logo=docker" alt="Docker">
    </a>
    <a href="https://www.python.org">
       <img src="https://img.shields.io/badge/python-3.11+-3776ab?logo=python&logoColor=white" alt="Python 3.11+">
@@ -198,7 +198,7 @@ docker run -d \
   -p 127.0.0.1:3000:3000 \
   -p 127.0.0.1:8000:8000 \
   -v korveo-data:/data \
-  zistica/korveo:latest
+  korveo/korveo:latest
 ```
 
 ⚠️ **Public VPS deployment**: the API (`:8000`) is **safe by default** — with no `KORVEO_API_TOKEN` set it serves loopback only and returns `403 remote_access_requires_auth` to non-loopback clients, so an instance accidentally bound to `0.0.0.0` won't leak your traces or the firewall control plane. For real remote access set `KORVEO_API_TOKEN` (then send `Authorization: Bearer <token>`); to deliberately run open on a trusted network set `KORVEO_ALLOW_INSECURE=1`. The dashboard (`:3000`) still has no built-in login — set `KORVEO_DASHBOARD_PASSWORD`, bind to `127.0.0.1` (as shown), and tunnel: `ssh -L 3000:localhost:3000 user@vps`.

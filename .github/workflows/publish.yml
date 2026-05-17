@@ -5,14 +5,14 @@ name: Publish (Docker + npm + ClawHub)
 # so by the time a tag exists the build is known good. This workflow's
 # job is just to push the published bits to:
 #
-#   - Docker Hub  (zistica/korveo image)
+#   - Docker Hub  (korveo/korveo image)
 #   - npm         (@korveo/{openclaw, mastra, voltagent,
 #                  openclaw-diagnostics})
 #   - ClawHub     (korveo-diagnostics — OpenClaw plugin marketplace)
 #
 # Why tag-triggered (not main-push)?
 #   Every merge would ship a new :latest, which surprises users who
-#   `docker pull zistica/korveo` expecting yesterday's behavior. Tags
+#   `docker pull korveo/korveo` expecting yesterday's behavior. Tags
 #   are an explicit "ship this" signal — same pattern as Sentry,
 #   Grafana, and the OTel collector.
 #
@@ -46,7 +46,7 @@ concurrency:
 
 jobs:
   publish:
-    name: Build + push zistica/korveo
+    name: Build + push korveo/korveo
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -72,15 +72,15 @@ jobs:
           # only" — useful for re-publishing main without a version bump.
           if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
             VERSION="${GITHUB_REF_NAME#v}"
-            TAGS="zistica/korveo:${VERSION},zistica/korveo:latest"
+            TAGS="korveo/korveo:${VERSION},korveo/korveo:latest"
           else
             DISPATCH_TAG="${{ github.event.inputs.tag }}"
             if [ -n "${DISPATCH_TAG}" ]; then
               VERSION="${DISPATCH_TAG#v}"
-              TAGS="zistica/korveo:${VERSION},zistica/korveo:latest"
+              TAGS="korveo/korveo:${VERSION},korveo/korveo:latest"
             else
               VERSION="(latest only)"
-              TAGS="zistica/korveo:latest"
+              TAGS="korveo/korveo:latest"
             fi
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
@@ -117,25 +117,28 @@ jobs:
 
       - name: Summary
         run: |
-          echo "### :rocket: Published \`zistica/korveo\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "### :rocket: Published \`korveo/korveo\`" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Tags: \`${{ steps.tags.outputs.tags }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "Version: \`${{ steps.tags.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "Platforms: \`linux/amd64\`, \`linux/arm64\`" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Pull with: \`docker pull zistica/korveo:${{ steps.tags.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Pull with: \`docker pull korveo/korveo:${{ steps.tags.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
 
 
   # ----- npm publish -----------------------------------------------------
   #
-  # Publishes the four `@korveo/*` integration packages to npmjs.com.
+  # Publishes all five `@korveo/*` packages to npmjs.com — the four
+  # framework integrations plus the TypeScript SDK (`@korveo/sdk`),
+  # which lives at packages/sdk-typescript (a different path than the
+  # integrations), so the matrix carries an explicit `dir` per entry.
   # Each package is built fresh on the runner so the published `dist/`
   # matches the tagged source — no relying on stale local build state.
   # Skips workflow_dispatch (manual) runs since lockstep version bumps
   # only land via tags; a hotfix re-publish via dispatch would push the
   # same version twice and npm would reject it.
   npm:
-    name: Publish ${{ matrix.package }} to npm
+    name: Publish ${{ matrix.pkg }} to npm
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     needs: publish  # docker first; if image fails, npm shouldn't ship either
@@ -149,14 +152,15 @@ jobs:
       # can be retried tag-locally.
       fail-fast: false
       matrix:
-        package:
-          - openclaw
-          - openclaw-diagnostics
-          - mastra
-          - voltagent
+        include:
+          - { pkg: "@korveo/openclaw",             dir: packages/integrations/openclaw }
+          - { pkg: "@korveo/openclaw-diagnostics", dir: packages/integrations/openclaw-diagnostics }
+          - { pkg: "@korveo/mastra",               dir: packages/integrations/mastra }
+          - { pkg: "@korveo/voltagent",            dir: packages/integrations/voltagent }
+          - { pkg: "@korveo/sdk",                  dir: packages/sdk-typescript }
     defaults:
       run:
-        working-directory: packages/integrations/${{ matrix.package }}
+        working-directory: ${{ matrix.dir }}
     steps:
       - uses: actions/checkout@v4
 
@@ -181,7 +185,7 @@ jobs:
           PKG_VERSION=$(node -p "require('./package.json').version")
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
             echo "::error::package.json version ($PKG_VERSION) does not match git tag ($TAG_VERSION)"
-            echo "Did you forget to bump packages/integrations/${{ matrix.package }}/package.json?"
+            echo "Did you forget to bump ${{ matrix.dir }}/package.json?"
             exit 1
           fi
           echo "version OK: $PKG_VERSION"
@@ -193,9 +197,9 @@ jobs:
 
       - name: Summary
         run: |
-          echo "### :package: Published \`@korveo/${{ matrix.package }}@${GITHUB_REF_NAME#v}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "### :package: Published \`${{ matrix.pkg }}@${GITHUB_REF_NAME#v}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Install with: \`npm install @korveo/${{ matrix.package }}@${GITHUB_REF_NAME#v}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Install with: \`npm install ${{ matrix.pkg }}@${GITHUB_REF_NAME#v}\`" >> "$GITHUB_STEP_SUMMARY"
 
 
   # ----- ClawHub publish -------------------------------------------------
