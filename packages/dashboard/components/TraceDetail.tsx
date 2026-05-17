@@ -110,9 +110,33 @@ export default function TraceDetail({ id }: { id: string }) {
   }, [initialModeApplied, traceQ.data, spansQ.data]);
 
   if (traceQ.error) {
+    const msg = String(traceQ.error.message ?? traceQ.error);
+    const notFound = /\b404\b|not found/i.test(msg);
+    if (notFound) {
+      // The common, non-scary case: an id with no ingested span — e.g.
+      // a `policy/decide` test records a *decision*, not a trace. Don't
+      // show a red error; explain it and point to where it actually is.
+      return (
+        <div className="card p-6 max-w-xl">
+          <div className="text-sm font-medium mb-1">No trace for <span className="font-mono">{id}</span></div>
+          <p className="text-[var(--muted)] text-sm leading-relaxed">
+            Nothing was ingested under this id. If you ran a firewall
+            check (<span className="font-mono">/v1/policy/decide</span>) it
+            recorded a <strong>decision</strong>, not a trace — traces
+            come from instrumented spans (<span className="font-mono">/v1/spans</span>).
+          </p>
+          <div className="flex gap-3 mt-4 text-sm">
+            <a href="/decisions" className="text-[var(--accent)] hover:underline">→ View decisions</a>
+            <a href="/traces" className="text-[var(--accent)] hover:underline">← All traces</a>
+          </div>
+        </div>
+      );
+    }
     return (
-      <div className="text-red-400">
-        Failed to load trace: {String(traceQ.error.message ?? traceQ.error)}
+      <div className="card p-6 max-w-xl">
+        <div className="text-sm font-medium text-red-400 mb-1">Couldn’t load this trace</div>
+        <p className="text-[var(--muted)] text-sm">{msg}</p>
+        <a href="/traces" className="text-[var(--accent)] hover:underline text-sm mt-3 inline-block">← All traces</a>
       </div>
     );
   }
