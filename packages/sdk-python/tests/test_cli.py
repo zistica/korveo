@@ -57,9 +57,38 @@ def test_no_command_shows_branded_splash(capsys):
     assert rc == 0
     out = capsys.readouterr().out
     assert "KORVEO" in out                       # branded header, not argparse
+    assert "korveo quickstart" in out            # the one-command headline
     for cmd in ("korveo up", "korveo demo", "korveo scorecard", "korveo doctor"):
         assert cmd in out
     assert "usage:" not in out                  # splash, not raw argparse
+
+
+def test_quickstart_composes_up_then_demo(monkeypatch, capsys):
+    """quickstart = zero-config one-shot: cmd_up then cmd_demo, in order,
+    opening the browser once at the end. Verifies composition + ordering
+    without Docker (cmd_up/cmd_demo are stubbed)."""
+    calls = []
+    monkeypatch.setattr(cli, "cmd_up", lambda a: (calls.append(("up", a.no_open)), 0)[1])
+    monkeypatch.setattr(cli, "cmd_demo", lambda a: (calls.append(("demo", a.no_open)), 0)[1])
+    opened = []
+    monkeypatch.setattr(cli.webbrowser, "open", lambda u: opened.append(u))
+    rc = cli.main(["quickstart", "--host", "http://x", "--dashboard", "http://d"])
+    assert rc == 0
+    assert [c[0] for c in calls] == ["up", "demo"]      # order: up THEN demo
+    assert calls[0][1] is True and calls[1][1] is True  # both suppress their own open
+    assert opened == ["http://d"]                       # browser opened ONCE, at the end
+
+
+def test_quickstart_aborts_if_up_fails(monkeypatch, capsys):
+    """If the container can't come up, quickstart stops before demo and
+    surfaces the failure (no false 'you're live')."""
+    monkeypatch.setattr(cli, "cmd_up", lambda a: 1)
+    demo_ran = []
+    monkeypatch.setattr(cli, "cmd_demo", lambda a: demo_ran.append(1) or 0)
+    rc = cli.main(["quickstart"])
+    assert rc == 1
+    assert demo_ran == []                                # demo never ran
+    assert "quickstart stopped" in capsys.readouterr().out
 
 
 def test_dash_h_still_shows_argparse_usage(capsys):

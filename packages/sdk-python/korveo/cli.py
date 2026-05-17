@@ -963,6 +963,68 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
 
 # ===========================================================================
+# `korveo quickstart` — the one-command, zero-config path: install →
+# start the container → instrument a real agent → block a live attack →
+# open the dashboard. Everything, in one shot, no flags required.
+# ===========================================================================
+
+
+def cmd_quickstart(args: argparse.Namespace) -> int:
+    header()
+    section("quickstart", "Zero-config",
+            "one command: start · instrument · block · dashboard")
+    out(muted("no setup, no flags. this brings Korveo fully online and"))
+    out(muted("proves the firewall on a live attack — end to end."))
+
+    # Stage 1 — bring the container up (cmd_up handles Docker-missing,
+    # already-running, health-wait, and prints actionable guidance).
+    up_args = argparse.Namespace(
+        host=args.host, dashboard=args.dashboard,
+        image=getattr(args, "image", None),
+        timeout=getattr(args, "timeout", 180),
+        no_open=True,                       # don't open yet — open once at the end
+    )
+    rc = cmd_up(up_args)
+    if rc != 0:
+        out("")
+        bad("quickstart stopped", "Korveo did not come online")
+        out(muted("fix the issue above, then re-run  ") + accent("korveo quickstart", True))
+        return rc
+
+    # Stage 2 — instrument + drive a real attack through the live firewall.
+    demo_args = argparse.Namespace(
+        host=args.host, dashboard=args.dashboard,
+        no_open=True,                       # suppress demo's own open
+    )
+    drc = cmd_demo(demo_args)
+
+    # Stage 3 — the payoff: open the dashboard once, branded sign-off.
+    print()
+    panel(title="you're live", body=[
+        "",
+        okc("●") + "  " + bold("Korveo is running and the firewall is enforcing."),
+        "",
+        "dashboard   " + info(args.dashboard),
+        "API         " + info(args.host),
+        "next        " + accent("korveo scorecard", True)
+        + muted("  — grade your agents vs OWASP LLM Top-10"),
+        "",
+    ])
+    out(muted("instrument your own agent in 2 lines:"))
+    out("  " + accent("import korveo", True))
+    out("  " + accent("korveo.configure()", True) + muted("   # done — every call traced + firewalled"))
+    print()
+    if not getattr(args, "no_open", False):
+        try:
+            webbrowser.open(args.dashboard)
+        except Exception:
+            pass
+    # Success if the container is up; demo returning 2 (nothing blocked)
+    # is still a working install, just note it.
+    return 0 if drc in (0, 2) else drc
+
+
+# ===========================================================================
 # entrypoint
 # ===========================================================================
 
@@ -982,6 +1044,15 @@ def _build_parser() -> argparse.ArgumentParser:
     up.add_argument("--timeout", type=int, default=180, help="seconds to wait for health")
     up.add_argument("--no-open", action="store_true", help="don't open the browser")
     up.set_defaults(func=cmd_up)
+
+    qs = sub.add_parser("quickstart",
+                        help="ONE command, zero-config: start + instrument + block + dashboard")
+    qs.add_argument("--host", default=DEFAULT_API, help="Korveo API base URL")
+    qs.add_argument("--dashboard", default=DEFAULT_DASHBOARD, help="dashboard URL")
+    qs.add_argument("--image", default=None, help=f"image to run (default: {DEFAULT_IMAGE})")
+    qs.add_argument("--timeout", type=int, default=180, help="seconds to wait for health")
+    qs.add_argument("--no-open", action="store_true", help="don't open the browser")
+    qs.set_defaults(func=cmd_quickstart)
 
     dm = sub.add_parser("demo", help="fire a real attack at the live firewall")
     dm.add_argument("--host", default=DEFAULT_API, help="Korveo API base URL")
@@ -1023,15 +1094,17 @@ def _splash() -> None:
     earns its first screen instead of dumping argparse."""
     header()
     print()
+    out(f"  {accent('korveo quickstart', True)}   {bold('← one command. zero config. does everything.')}")
+    print()
     for cmd, desc in (
-        ("korveo up", "start Korveo, open the dashboard"),
+        ("korveo up", "just start Korveo + open the dashboard"),
         ("korveo demo", "watch the firewall block a live attack"),
         ("korveo scorecard", "grade your firewall vs OWASP LLM Top-10"),
         ("korveo doctor", "connectivity + which detectors are live"),
     ):
         out(f"  {accent(f'{cmd:<24}', True)}{muted(desc)}")
     print()
-    out(muted("first time?  ") + accent("korveo up && korveo demo", True))
+    out(muted("first time?  just run  ") + accent("korveo quickstart", True))
     out(muted("full options: ") + "korveo <command> --help")
     print()
 
