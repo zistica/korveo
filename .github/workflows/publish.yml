@@ -236,20 +236,18 @@ jobs:
             echo "::error::openclaw-diagnostics version mismatch (tag=$TAG_VERSION, package=$PKG_VERSION)"
             exit 1
           fi
-          echo "ClawHub publish target: korveo/korveo-diagnostics@v$PKG_VERSION"
+          echo "ClawHub publish target: @korveo/openclaw-diagnostics@v$PKG_VERSION (owner: korveo)"
 
       - name: Publish to ClawHub
         env:
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
-        # `clawhub package publish` requires a positional <source>
-        # argument: a folder path, GitHub repo, or URL. Fix
-        # (2026-05-10): the previous form omitted source entirely
-        # ("missing required argument 'source'") and the fallback
-        # pointed at korveo/korveo-diagnostics which doesn't exist
-        # — the actual repo is the monorepo. Use the local folder
-        # path so the CLI uploads from the checkout, with a
-        # GitHub-source fallback that uses the right repo + ref +
-        # subpath.
+        # The current clawhub CLI REQUIRES pinned source provenance:
+        # `--source-repo` AND `--source-commit` must both be set, or it
+        # errors out before upload. (The older form without them — and
+        # the owner/repo@ref fallback — no longer work; verified by a
+        # manual publish 2026-05-17.) Package identity comes from
+        # package.json (`@korveo/openclaw-diagnostics`); do NOT pass
+        # `--name` (overriding it triggers a ClawPack name mismatch).
         run: |
           set -e
           if [ -z "$CLAWHUB_TOKEN" ]; then
@@ -257,17 +255,14 @@ jobs:
             exit 1
           fi
           PKG_DIR="packages/integrations/openclaw-diagnostics"
-          # Primary: publish from the local checkout.
-          clawhub package publish "$PKG_DIR" --version "${GITHUB_REF_NAME#v}" || {
-            # Fallback: have ClawHub fetch from the monorepo at the
-            # tagged ref + subpath.
-            clawhub package publish "${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}" \
-              --source-path "$PKG_DIR" \
-              --version "${GITHUB_REF_NAME#v}"
-          }
+          clawhub package publish "$PKG_DIR" \
+            --version "${GITHUB_REF_NAME#v}" \
+            --source-repo "${GITHUB_REPOSITORY}" \
+            --source-commit "${GITHUB_SHA}" \
+            --changelog "Release ${GITHUB_REF_NAME}"
 
       - name: Summary
         run: |
-          echo "### :hammer_and_wrench: Published \`korveo-diagnostics\` to ClawHub" >> "$GITHUB_STEP_SUMMARY"
+          echo "### :hammer_and_wrench: Published \`@korveo/openclaw-diagnostics\` to ClawHub" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Install with: \`openclaw plugins install clawhub:korveo-diagnostics@${GITHUB_REF_NAME#v}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Install with: \`openclaw plugins install clawhub:@korveo/openclaw-diagnostics@${GITHUB_REF_NAME#v}\`" >> "$GITHUB_STEP_SUMMARY"
