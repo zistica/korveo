@@ -260,24 +260,40 @@ function PolicyHelpDot({ name, description }: { name: string; description?: stri
   const h = policyHelp(name, description);
   return (
     <span
-      className="relative group/help inline-flex"
+      className="relative group/help inline-flex shrink-0"
       onClick={(e) => e.preventDefault()}
     >
       <span
-        className="flex items-center justify-center w-4 h-4 rounded-full border border-[var(--border)] text-[10px] leading-none text-[var(--muted)] cursor-help select-none hover:text-[var(--foreground)] hover:border-[var(--foreground-soft)] transition-colors"
+        className="flex items-center justify-center w-[18px] h-[18px] rounded-full border text-[11px] leading-none cursor-help select-none transition-colors"
+        style={{
+          borderColor: 'var(--border-strong)',
+          color: 'var(--muted)',
+        }}
         aria-label={`What does ${name} do?`}
       >
         ?
       </span>
+      {/* Drops cleanly BELOW the name (predictable, never overlaps the
+          badges), themed via --background-raised so it follows
+          light/dark exactly like .card does. */}
       <span
-        className="pointer-events-none absolute left-6 top-0 z-30 w-72 rounded-lg border border-[var(--border)] p-3 text-xs leading-relaxed shadow-xl opacity-0 group-hover/help:opacity-100 transition-opacity"
-        style={{ background: 'var(--background-elevated, #16181d)' }}
+        className="pointer-events-none absolute top-full left-0 mt-2 z-50 w-[300px] max-w-[78vw] rounded-lg p-3.5 text-xs leading-relaxed opacity-0 translate-y-1 group-hover/help:opacity-100 group-hover/help:translate-y-0 transition-all duration-150"
+        style={{
+          background: 'var(--background-raised)',
+          border: '1px solid var(--border-strong)',
+          color: 'var(--foreground)',
+          boxShadow: '0 8px 28px -6px rgba(0,0,0,0.35)',
+        }}
         role="tooltip"
       >
-        <span className="block font-semibold text-[var(--foreground)] mb-1">What it does</span>
-        <span className="block text-[var(--muted)] mb-2.5">{h.what}</span>
-        <span className="block font-semibold text-[var(--foreground)] mb-1">Turn it on if…</span>
-        <span className="block text-[var(--muted)]">{h.when}</span>
+        <span className="block text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--muted-soft)' }}>
+          What it does
+        </span>
+        <span className="block mb-3" style={{ color: 'var(--foreground)' }}>{h.what}</span>
+        <span className="block text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--muted-soft)' }}>
+          Turn it on if…
+        </span>
+        <span className="block" style={{ color: 'var(--muted)' }}>{h.when}</span>
       </span>
     </span>
   );
