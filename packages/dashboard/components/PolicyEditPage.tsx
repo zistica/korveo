@@ -10,6 +10,7 @@ import {
 } from '@/lib/api';
 import ModeToggle from '@/components/ModeToggle';
 import PolicyEditor from '@/components/PolicyEditor';
+import { policyHelp } from '@/lib/policyHelp';
 
 /**
  * Edit-mode wrapper. Loads the policy by name, renders PolicyEditor
@@ -79,6 +80,24 @@ export default function PolicyEditPage({ name }: { name: string }) {
           </p>
         ) : null}
       </div>
+
+      {/* Plain-English summary FIRST — an operator should understand
+          what this rule does and whether they want it before they ever
+          look at the DSL condition or the mode toggle below. */}
+      <section className="mb-8 card p-5 border-l-2 border-l-[var(--accent)]">
+        <h2 className="text-[11px] uppercase tracking-wider text-[var(--muted)] mb-2">
+          In plain English
+        </h2>
+        <p className="text-base text-[var(--foreground)] leading-relaxed">
+          {policyHelp(policy.name, policy.description).what}
+        </p>
+        <p className="text-sm text-[var(--muted)] mt-3">
+          <span className="text-[var(--foreground-soft)] font-medium">
+            Turn it on if&nbsp;
+          </span>
+          {policyHelp(policy.name, policy.description).when}
+        </p>
+      </section>
 
       {/* Firewall mode toggle (§5.4 / §10.1). Only render when the
           API surfaced a mode value — avoids showing it for legacy

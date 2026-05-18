@@ -199,7 +199,6 @@ function PolicyCard({ policy }: { policy: Policy }) {
       <div className="flex items-center gap-3 mb-2 flex-wrap">
         <span className={sevCls}>{policy.severity}</span>
         <h3 className="font-mono text-sm font-medium tracking-tight">{policy.name}</h3>
-        <PolicyHelpDot name={policy.name} description={policy.description} />
         {isFirewallLifecycle ? (
           <span className="badge badge-violet">{policy.lifecycle}</span>
         ) : (
@@ -224,12 +223,16 @@ function PolicyCard({ policy }: { policy: Policy }) {
           </span>
         ) : null}
       </div>
-      {policy.description ? (
-        <p className="text-sm text-[var(--foreground-soft)] mb-2">
-          {policy.description}
-        </p>
-      ) : null}
-      <code className="block text-xs font-mono text-[var(--muted)] truncate">
+      {/* Plain-English, always visible — the user decides what to turn
+          on by reading THIS, not the cryptic name or the DSL. */}
+      <p className="text-sm text-[var(--foreground)] mb-1.5">
+        {policyHelp(policy.name, policy.description).what}
+      </p>
+      <p className="text-xs text-[var(--muted)] mb-2">
+        <span style={{ color: 'var(--muted-soft)' }}>Turn it on if&nbsp;</span>
+        {policyHelp(policy.name, policy.description).when}
+      </p>
+      <code className="block text-[11px] font-mono text-[var(--muted-soft)] truncate opacity-70">
         {policy.condition}
       </code>
     </Link>
@@ -250,51 +253,3 @@ function modeHelp(mode: string): string {
   }
 }
 
-/**
- * The "?" next to each policy name. Pure-CSS hover popover with a
- * plain-English explanation so a non-technical operator can decide
- * what to enable without reading the DSL. preventDefault on click so
- * tapping the "?" doesn't navigate the card's Link.
- */
-function PolicyHelpDot({ name, description }: { name: string; description?: string | null }) {
-  const h = policyHelp(name, description);
-  return (
-    <span
-      className="relative group/help inline-flex shrink-0"
-      onClick={(e) => e.preventDefault()}
-    >
-      <span
-        className="flex items-center justify-center w-[18px] h-[18px] rounded-full border text-[11px] leading-none cursor-help select-none transition-colors"
-        style={{
-          borderColor: 'var(--border-strong)',
-          color: 'var(--muted)',
-        }}
-        aria-label={`What does ${name} do?`}
-      >
-        ?
-      </span>
-      {/* Drops cleanly BELOW the name (predictable, never overlaps the
-          badges), themed via --background-raised so it follows
-          light/dark exactly like .card does. */}
-      <span
-        className="pointer-events-none absolute top-full left-0 mt-2 z-50 w-[300px] max-w-[78vw] rounded-lg p-3.5 text-xs leading-relaxed opacity-0 translate-y-1 group-hover/help:opacity-100 group-hover/help:translate-y-0 transition-all duration-150"
-        style={{
-          background: 'var(--background-raised)',
-          border: '1px solid var(--border-strong)',
-          color: 'var(--foreground)',
-          boxShadow: '0 8px 28px -6px rgba(0,0,0,0.35)',
-        }}
-        role="tooltip"
-      >
-        <span className="block text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--muted-soft)' }}>
-          What it does
-        </span>
-        <span className="block mb-3" style={{ color: 'var(--foreground)' }}>{h.what}</span>
-        <span className="block text-[10px] uppercase tracking-wider mb-1" style={{ color: 'var(--muted-soft)' }}>
-          Turn it on if…
-        </span>
-        <span className="block" style={{ color: 'var(--muted)' }}>{h.when}</span>
-      </span>
-    </span>
-  );
-}
