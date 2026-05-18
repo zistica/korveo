@@ -228,8 +228,10 @@ function PolicyCard({ policy }: { policy: Policy }) {
       <p className="text-sm text-[var(--foreground)] mb-1.5">
         {policyHelp(policy.name, policy.description).what}
       </p>
+      <p className="text-[10px] uppercase tracking-wider text-[var(--muted-soft)] mb-0.5">
+        When to use it
+      </p>
       <p className="text-xs text-[var(--muted)] mb-2">
-        <span style={{ color: 'var(--muted-soft)' }}>Turn it on if&nbsp;</span>
         {policyHelp(policy.name, policy.description).when}
       </p>
       <code className="block text-[11px] font-mono text-[var(--muted-soft)] truncate opacity-70">

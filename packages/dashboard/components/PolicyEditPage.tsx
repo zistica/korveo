@@ -91,10 +91,10 @@ export default function PolicyEditPage({ name }: { name: string }) {
         <p className="text-base text-[var(--foreground)] leading-relaxed">
           {policyHelp(policy.name, policy.description).what}
         </p>
-        <p className="text-sm text-[var(--muted)] mt-3">
-          <span className="text-[var(--foreground-soft)] font-medium">
-            Turn it on if&nbsp;
-          </span>
+        <p className="text-[11px] uppercase tracking-wider text-[var(--muted-soft)] mt-4 mb-1">
+          When to use it
+        </p>
+        <p className="text-sm text-[var(--muted)]">
           {policyHelp(policy.name, policy.description).when}
         </p>
       </section>
