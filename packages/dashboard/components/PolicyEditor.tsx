@@ -179,7 +179,7 @@ export default function PolicyEditor({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="card p-5 space-y-4">
         <Field
           label="Name"

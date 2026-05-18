@@ -104,7 +104,7 @@ export default function PolicyEditPage({ name }: { name: string }) {
           installs whose backend hasn't run the firewall migration
           yet. */}
       {policy.mode ? (
-        <section className="mb-8 card p-4 space-y-3">
+        <section className="mb-8 card p-5 space-y-3">
           <div>
             <h2 className="text-sm font-semibold">Enforcement mode</h2>
             <p className="text-xs text-[var(--muted)] mt-1">
