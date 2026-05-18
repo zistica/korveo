@@ -96,6 +96,49 @@ export default function PolicyEditPage({ name }: { name: string }) {
         </p>
       </section>
 
+      {/* Plain-English summary of the rule's behaviour so an operator
+          never has to read the DSL / lifecycle jargon to know what
+          this policy actually does to traffic. */}
+      <section className="mb-8 card p-5">
+        <h2 className="text-[11px] uppercase tracking-wider text-[var(--muted)] mb-4">
+          What happens when it triggers
+        </h2>
+        <dl className="space-y-3 text-sm">
+          <div className="flex gap-3">
+            <dt className="w-28 shrink-0 text-[var(--muted)]">It will</dt>
+            <dd className="text-[var(--foreground)]">
+              {actionPlain(policy.action, policy.mode)}
+            </dd>
+          </div>
+          <div className="flex gap-3">
+            <dt className="w-28 shrink-0 text-[var(--muted)]">Applies to</dt>
+            <dd className="text-[var(--foreground)]">
+              {policy.scope_agents.length > 0
+                ? `Only these agents: ${policy.scope_agents.join(', ')}`
+                : 'Every agent in this project.'}
+            </dd>
+          </div>
+          <div className="flex gap-3">
+            <dt className="w-28 shrink-0 text-[var(--muted)]">Severity</dt>
+            <dd className="text-[var(--foreground)] capitalize">
+              {policy.severity}
+              <span className="text-[var(--muted)]">
+                {' '}
+                — how loud the alert is, no effect on whether it triggers.
+              </span>
+            </dd>
+          </div>
+          <div className="flex gap-3">
+            <dt className="w-28 shrink-0 text-[var(--muted)]">Status</dt>
+            <dd className={policy.enabled ? 'text-emerald-400' : 'text-rose-400'}>
+              {policy.enabled
+                ? 'On — this rule is active.'
+                : 'Off — soft-disabled, it will not run.'}
+            </dd>
+          </div>
+        </dl>
+      </section>
+
       {/* Firewall mode toggle (§5.4 / §10.1). Only render when the
           API surfaced a mode value — avoids showing it for legacy
           installs whose backend hasn't run the firewall migration
@@ -114,7 +157,26 @@ export default function PolicyEditPage({ name }: { name: string }) {
         </section>
       ) : null}
 
-      <PolicyEditor mode="edit" initial={policy} />
+      {/* The full rule editor is power-user territory (raw DSL
+          condition, lifecycle, priority, timeouts). Collapsed by
+          default so the plain-English view above is what a normal
+          operator sees first. */}
+      <details className="mb-8 group">
+        <summary className="card p-4 cursor-pointer select-none flex items-center justify-between list-none">
+          <span className="text-sm font-medium">
+            Advanced — edit the raw rule
+          </span>
+          <span className="text-xs text-[var(--muted)] group-open:hidden">
+            condition, lifecycle, priority… ▾
+          </span>
+          <span className="text-xs text-[var(--muted)] hidden group-open:inline">
+            hide ▴
+          </span>
+        </summary>
+        <div className="mt-4">
+          <PolicyEditor mode="edit" initial={policy} />
+        </div>
+      </details>
 
       {audit && audit.entries.length > 0 ? (
         <section className="mt-10">
@@ -154,6 +216,36 @@ export default function PolicyEditPage({ name }: { name: string }) {
       ) : null}
     </div>
   );
+}
+
+
+/**
+ * Turn the stored `action` (+ current `mode`) into one plain sentence
+ * an operator can act on — no DSL, no firewall vocab. Mode wins:
+ * shadow/flag never actually stop traffic regardless of the action.
+ */
+function actionPlain(action: string, mode?: string | null): string {
+  if (mode === 'shadow') {
+    return 'Only record the match — watching mode. Nothing is blocked or changed yet. Switch the enforcement mode above to make it act.';
+  }
+  if (mode === 'flag') {
+    return 'Flag the match so it shows up in violations — but the request or response is still allowed through.';
+  }
+  switch (action) {
+    case 'block':
+      return 'Block it — the offending request or response is stopped before it goes through.';
+    case 'require_approval':
+      return 'Pause and ask a human to approve before it is allowed to continue.';
+    case 'rewrite':
+      return 'Rewrite the content to strip the unsafe part, then let it continue.';
+    case 'allow':
+      return 'Explicitly allow it and skip any lower-priority rules.';
+    case 'alert':
+      return 'Send an alert to your webhook. Nothing is stopped.';
+    case 'flag':
+    default:
+      return 'Record a violation you can review later. Nothing is stopped.';
+  }
 }
 
 
