@@ -85,9 +85,6 @@ export default function PolicyEditPage({ name }: { name: string }) {
           what this rule does and whether they want it before they ever
           look at the DSL condition or the mode toggle below. */}
       <section className="mb-8 card p-5 border-l-2 border-l-[var(--accent)]">
-        <h2 className="text-[11px] uppercase tracking-wider text-[var(--muted)] mb-2">
-          In plain English
-        </h2>
         <p className="text-base text-[var(--foreground)] leading-relaxed">
           {policyHelp(policy.name, policy.description).what}
         </p>
