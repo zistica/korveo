@@ -1,6 +1,6 @@
 {
   "name": "@korveo/openclaw-diagnostics",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Korveo observability + Agent Firewall for OpenClaw \u2014 captures prompts, responses, tool I/O, and synchronously enforces firewall policies on every tool call.",
   "homepage": "https://github.com/zistica/korveo/tree/main/packages/integrations/openclaw-diagnostics",
   "repository": {
