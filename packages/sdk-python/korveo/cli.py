@@ -135,6 +135,12 @@ def panel(body: List[str], title: Optional[str] = None) -> None:
 def header() -> None:
     if _QUIET:
         return
+    # Print at most once per process. quickstart calls cmd_up + cmd_demo
+    # internally, each of which calls header(); without this guard a
+    # single `korveo quickstart` prints the banner three times.
+    if getattr(header, "_printed", False):
+        return
+    header._printed = True  # type: ignore[attr-defined]
     print()
     panel([
         "",
@@ -297,6 +303,12 @@ def cmd_up(args: argparse.Namespace) -> int:
         err = (proc.stderr or proc.stdout or "").strip()
         if "already in use" in err or "Conflict" in err:
             step("a 'korveo' container already exists — reusing it")
+        elif "Cannot connect to the Docker daemon" in err or \
+                "Is the docker daemon running" in err:
+            bad("Docker is installed but not running")
+            out(muted("start Docker Desktop, wait for it to finish booting,"))
+            out(muted("then re-run  ") + accent("korveo quickstart", True))
+            return 1
         else:
             bad("docker failed")
             for ll in err.splitlines()[-4:]:
@@ -1242,6 +1254,10 @@ def _splash() -> None:
 
 
 def main(argv: Optional[List[str]] = None) -> int:
+    # Banner is once-per-invocation: quickstart's internal cmd_up +
+    # cmd_demo calls reuse this run's header, but a fresh `korveo …`
+    # process (or a new main() call in tests) starts clean.
+    header._printed = False  # type: ignore[attr-defined]
     parser = _build_parser()
     args = parser.parse_args(argv)
 

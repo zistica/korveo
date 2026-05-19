@@ -1,6 +1,6 @@
 {
   "name": "@korveo/sdk",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Local-first AI agent observability SDK (TypeScript)",
   "type": "module",
   "main": "./dist/index.js",

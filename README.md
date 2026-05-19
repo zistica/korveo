@@ -56,7 +56,7 @@
 </p>
 
 ```bash
-pip install korveo
+pip install -U korveo
 korveo quickstart   # API + dashboard + starter policies, zero config
 korveo demo         # watch the firewall block a live attack (~30s, no keys)
 ```
@@ -249,7 +249,7 @@ Compatible with anything that speaks OpenTelemetry (Logfire, Phoenix, Datadog Ge
 The fastest path — the `korveo` CLI wraps Docker, waits for health, opens the dashboard, then fires a real attack demo:
 
 ```bash
-pip install korveo
+pip install -U korveo
 korveo quickstart # API + dashboard + starter policies, opens http://localhost:3000
 korveo demo       # instruments a real agent + watch the firewall block a live attack
 korveo scorecard  # grade your firewall vs the OWASP LLM Top-10 attack suite
