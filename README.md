@@ -56,8 +56,9 @@
 </p>
 
 ```bash
-pip install "korveo @ git+https://github.com/zistica/korveo#subdirectory=packages/sdk-python"
-korveo up && korveo demo
+pip install korveo
+korveo quickstart   # API + dashboard + starter policies, zero config
+korveo demo         # watch the firewall block a live attack (~30s, no keys)
 ```
 
 <p align="center">
@@ -219,7 +220,7 @@ docker compose build --build-arg KORVEO_PRESIDIO_MODEL=en_core_web_md
 
 | Integration | Type | Description |
 | --- | --- | --- |
-| [Python SDK](packages/sdk-python/) | `pip install -e .` | `@korveo.trace` decorator, `korveo.span()` context manager, sessions, policy engine, framework integrations |
+| [Python SDK](packages/sdk-python/) | `pip install korveo` | `@korveo.trace` decorator, `korveo.span()` context manager, sessions, policy engine, framework integrations |
 | [TypeScript SDK](packages/sdk-typescript/) | `@korveo/sdk` | Wire-format peer of the Python SDK; identical behavior |
 | [LangChain](packages/sdk-python/korveo/integrations/langchain.py) | Python, callback handler | Zero-config via `KORVEO_TRACING=true` — every chain auto-traced |
 | [LangGraph](packages/sdk-python/korveo/integrations/langgraph_firewall.py) | Python | Graph nodes/edges traced; firewall hooks on every node call |
@@ -248,8 +249,8 @@ Compatible with anything that speaks OpenTelemetry (Logfire, Phoenix, Datadog Ge
 The fastest path — the `korveo` CLI wraps Docker, waits for health, opens the dashboard, then fires a real attack demo:
 
 ```bash
-pip install "korveo @ git+https://github.com/zistica/korveo#subdirectory=packages/sdk-python"
-korveo up         # starts the container, opens http://localhost:3000
+pip install korveo
+korveo quickstart # API + dashboard + starter policies, opens http://localhost:3000
 korveo demo       # instruments a real agent + watch the firewall block a live attack
 korveo scorecard  # grade your firewall vs the OWASP LLM Top-10 attack suite
 korveo scorecard --target http://localhost:11434/v1  # grade ANY agent → shareable badge
