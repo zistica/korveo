@@ -254,6 +254,12 @@ jobs:
             echo "::error::CLAWHUB_TOKEN secret is not set on this repo"
             exit 1
           fi
+          # The clawhub CLI does NOT read CLAWHUB_TOKEN from the env for
+          # publish — it requires a token stored via `clawhub login`.
+          # Without this step publish fails with "Not logged in".
+          # (Verified against clawhub CLI 2026-05-19; --no-browser makes
+          # --token mandatory and skips the interactive browser flow.)
+          clawhub login --token "$CLAWHUB_TOKEN" --no-browser
           PKG_DIR="packages/integrations/openclaw-diagnostics"
           clawhub package publish "$PKG_DIR" \
             --version "${GITHUB_REF_NAME#v}" \
