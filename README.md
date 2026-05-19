@@ -70,13 +70,8 @@ korveo demo         # watch the firewall block a live attack (~30s, no keys)
      small enough for the README to load fast, readable enough for
      the dashboard panels and trace IDs to be legible. -->
 <p align="center">
-   <a href="https://youtu.be/hgTntZniuv4">
-      <img alt="▶ Korveo demo — 52-second walkthrough (click to watch full on YouTube)"
-           src="assets/demo.gif" width="100%">
-   </a>
-</p>
-<p align="center">
-   <sub>▶ <a href="https://youtu.be/hgTntZniuv4">Watch the full 52-second walkthrough on YouTube</a> — instrumenting an agent, inspecting a trace, promoting a shadow policy, and watching the firewall block a live cross-session leak.</sub>
+   <img alt="Korveo demo — instrumenting an agent, inspecting a trace, promoting a shadow policy, and watching the firewall block a live cross-session leak"
+        src="assets/demo.gif" width="100%">
 </p>
 
 <p align="center">
@@ -389,7 +384,7 @@ Each toggle is documented at length in `~/.openclaw/extensions/korveo-diagnostic
 
 Send a test message from sender A. Send a probing message from sender B. Watch the traces at `/traces`, the violations at `/violations`, the dashboard's effective-settings panel at `/settings/firewall`. Cross-session leak attempts show up as `korveo_egress_deny:exec` / `korveo_sandbox_block:*` rows. The bot's own reply contains zero foreign data.
 
-A real walkthrough — Telegram user planted "Northstar Logistics, Priya Raman, $48k ARR" customer notes; Slack user asked for the same data. The bot's reply contained zero foreign-tenant content. Trace evidence: 3× `korveo_egress_deny:exec`, 2× sandbox rewrites to empty per-sender dirs, 97 prior-tenant messages cleared from history at sender-switch. See the [demo video](#-) above for the live capture.
+A real walkthrough — Telegram user planted "Northstar Logistics, Priya Raman, $48k ARR" customer notes; Slack user asked for the same data. The bot's reply contained zero foreign-tenant content. Trace evidence: 3× `korveo_egress_deny:exec`, 2× sandbox rewrites to empty per-sender dirs, 97 prior-tenant messages cleared from history at sender-switch. See the demo above for the live capture.
 
 ---
 
