@@ -1,0 +1,60 @@
+<!doctype html>
+<!-- Source for the GitHub social-preview card. Regenerate the PNG with:
+     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+       --headless --disable-gpu --hide-scrollbars \
+       --screenshot=assets/social-preview.png --window-size=1280,640 \
+       file://$PWD/assets/social-preview.html -->
+<html>
+<head><meta charset="utf-8"><style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1280px; height:640px; overflow:hidden; }
+  body {
+    background:#0b0d10;
+    font-family:-apple-system,"SF Pro Display","Segoe UI",Helvetica,Arial,sans-serif;
+    color:#E8EAED;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:0 110px;
+    position:relative;
+  }
+  .accent { position:absolute; left:0; top:0; width:6px; height:100%; background:#22d3ee; }
+  .top { display:flex; align-items:center; gap:36px; }
+  svg { width:112px; height:112px; flex:none; }
+  .word { font-size:96px; font-weight:700; letter-spacing:-3px; line-height:1; }
+  .tag {
+    margin-top:52px; font-size:44px; font-weight:600;
+    line-height:1.25; color:#fff; white-space:nowrap;
+  }
+  .sub {
+    margin-top:22px; font-size:32px; font-weight:400;
+    line-height:1.4; color:#9AA0A8; white-space:nowrap;
+  }
+  .foot {
+    position:absolute; left:110px; bottom:64px;
+    display:flex; align-items:center; gap:26px;
+    font-family:"SF Mono",ui-monospace,Menlo,monospace;
+    font-size:26px; color:#8A9099;
+  }
+  .foot .dot { color:#3a3f47; }
+  .foot .hl { color:#22d3ee; }
+</style></head>
+<body>
+  <div class="accent"></div>
+  <div class="top">
+    <svg viewBox="0 0 24 24">
+      <path d="M20 12c0 3.6-2.9 6.4-6.5 6.4-1.8 0-3.4-.7-4.6-1.8L3.5 13l5-1c.4-3.1 2.9-5.4 6-5.4 3.2 0 5.5 2.4 5.5 5.4z" fill="#E8EAED"/>
+      <path d="M15.4 6.4 19 3.4 17.5 7.7z" fill="#E8EAED"/>
+      <circle cx="15" cy="11" r="1.5" fill="#22d3ee"/>
+    </svg>
+    <div class="word">Korveo</div>
+  </div>
+  <div class="tag">Local-first firewall &amp; flight recorder for AI agents.</div>
+  <div class="sub">Record every call. Block the dangerous ones. Nothing leaves your machine.</div>
+  <div class="foot">
+    <span class="hl">pip install korveo</span>
+    <span class="dot">•</span>
+    <span>Apache-2.0</span>
+    <span class="dot">•</span>
+    <span>self-hosted, no account</span>
+  </div>
+</body>
+</html>
