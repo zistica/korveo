@@ -74,10 +74,6 @@ korveo demo         # watch the firewall block a live attack (~30s, no keys)
         src="assets/demo.gif" width="100%">
 </p>
 
-<p align="center">
-   <sub>⭐ <strong>If watching a firewall block a live agent attack made you go "oh" — star the repo.</strong> It's the single signal that tells us to keep shipping this in the open.</sub>
-</p>
-
 ---
 
 ## 🏛️ Four Pillars · Observe, Govern, Defend, Operate
