@@ -74,6 +74,16 @@ korveo demo         # watch the firewall block a live attack (~30s, no keys)
         src="assets/demo.gif" width="100%">
 </p>
 
+<p align="center">
+  <a href="https://www.star-history.com/?repos=zistica%2Fkorveo&type=date&legend=top-left">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=zistica/korveo&type=date&theme=dark&legend=top-left" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=zistica/korveo&type=date&legend=top-left" />
+      <img alt="Korveo star history" src="https://api.star-history.com/chart?repos=zistica/korveo&type=date&legend=top-left" />
+    </picture>
+  </a>
+</p>
+
 ---
 
 ## 🏛️ Four Pillars · Observe, Govern, Defend, Operate
